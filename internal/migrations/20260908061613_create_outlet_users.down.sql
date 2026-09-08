@@ -1,0 +1,1 @@
+DROP TABLE outlet_users;

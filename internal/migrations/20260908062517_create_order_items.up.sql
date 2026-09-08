@@ -1,0 +1,12 @@
+CREATE TABLE order_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    service_id UUID REFERENCES services(id) ON DELETE RESTRICT,
+    price BIGINT NOT NULL DEFAULT 0,
+    quantity BIGINT NOT NULL DEFAULT 0,
+    subtotal BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+

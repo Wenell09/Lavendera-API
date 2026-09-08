@@ -1,0 +1,11 @@
+DROP INDEX IF EXISTS idx_customers_tenant;
+DROP INDEX IF EXISTS idx_users_tenant;
+DROP INDEX IF EXISTS idx_outlets_tenant;
+DROP INDEX IF EXISTS idx_services_tenant;
+DROP INDEX IF EXISTS idx_orders_tenant;
+DROP INDEX IF EXISTS idx_orders_outlet;
+DROP INDEX IF EXISTS idx_orders_customer;
+DROP INDEX IF EXISTS idx_orders_number;
+DROP INDEX IF EXISTS idx_order_items_order;
+DROP INDEX IF EXISTS idx_payments_order;
+DROP INDEX IF EXISTS idx_order_status_histories_order;
