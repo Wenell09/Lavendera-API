@@ -12,6 +12,7 @@ type Notification struct {
 	UserID    *uuid.UUID `gorm:"type:uuid"`
 	Type      string     `gorm:"type:varchar(50);not null"`
 	Message   string     `gorm:"type:text;not null"`
+	IsRead    bool
 	SentAt    *time.Time
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	Order     *Order    `gorm:"foreignKey:OrderID"`

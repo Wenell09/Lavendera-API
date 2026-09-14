@@ -1,0 +1,4326 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Lavendera Laundry POS & Management API",
+    "version": "1.0.0",
+    "description": "API kontrak OpenAPI 3.0.3 untuk Lavendera, SaaS manajemen laundry multi-tenant. Laundry kiloan menggunakan quantity integer dalam unit terkecil (gram untuk kg), sedangkan nominal Rupiah menggunakan integer/int64. Pembayaran mendukung cash, QRIS, dan bank transfer tanpa payment gateway. Portal customer publik dapat memuat storefront, membuat order dan tracking tanpa login; endpoint internal menggunakan JWT Bearer Token."
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Server API Utama"
+    },
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Server Pengembangan Lokal"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Root",
+      "description": "Route utama API"
+    },
+    {
+      "name": "Authentication",
+      "description": "Login dan registrasi akun"
+    },
+    {
+      "name": "Orders",
+      "description": "Manajemen order laundry"
+    },
+    {
+      "name": "Payments",
+      "description": "Pencatatan pembayaran"
+    },
+    {
+      "name": "Customers",
+      "description": "Manajemen pelanggan"
+    },
+    {
+      "name": "Services",
+      "description": "Manajemen layanan laundry"
+    },
+    {
+      "name": "Service Categories",
+      "description": "Manajemen kategori layanan"
+    },
+    {
+      "name": "Discounts",
+      "description": "Manajemen diskon"
+    },
+    {
+      "name": "Outlets",
+      "description": "Manajemen outlet"
+    },
+    {
+      "name": "Staff",
+      "description": "Manajemen user/staff dan penugasan outlet"
+    },
+    {
+      "name": "Payment Methods",
+      "description": "Metode pembayaran per outlet"
+    },
+    {
+      "name": "Reports",
+      "description": "Laporan operasional dan pembayaran"
+    },
+    {
+      "name": "Order History",
+      "description": "Riwayat perubahan status order"
+    },
+    {
+      "name": "Notifications",
+      "description": "Notifikasi internal"
+    },
+    {
+      "name": "Audit Logs",
+      "description": "Audit aktivitas tenant"
+    },
+    {
+      "name": "Public Portal",
+      "description": "Endpoint publik untuk customer. Customer dapat membuat order dan tracking order tanpa login dan tanpa Bearer Token."
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["Root"],
+        "summary": "Memeriksa API aktif",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API aktif",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RootResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Registrasi tenant dan user admin",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registrasi berhasil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login user",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login berhasil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "tags": ["Customers"],
+        "summary": "Mendapatkan daftar customer",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar customer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Customers"],
+        "summary": "Membuat customer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/{id}": {
+      "get": {
+        "tags": ["Customers"],
+        "summary": "Mendapatkan detail customer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail customer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Customers"],
+        "summary": "Memperbarui customer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer berhasil diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Customers"],
+        "summary": "Menghapus customer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Customer berhasil dihapus"
+          }
+        }
+      }
+    },
+    "/service-categories": {
+      "get": {
+        "tags": ["Service Categories"],
+        "summary": "Mendapatkan kategori layanan",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar kategori",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceCategoryListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Service Categories"],
+        "summary": "Membuat kategori layanan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceCategoryCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Kategori berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service-categories/{id}": {
+      "get": {
+        "tags": ["Service Categories"],
+        "summary": "Detail kategori layanan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail kategori",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Service Categories"],
+        "summary": "Memperbarui kategori layanan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceCategoryUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kategori diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceCategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Service Categories"],
+        "summary": "Menghapus kategori layanan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Kategori dihapus"
+          }
+        }
+      }
+    },
+    "/services": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Mendapatkan daftar layanan",
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar layanan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Services"],
+        "summary": "Membuat layanan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Layanan berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/services/{id}": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Detail layanan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail layanan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Services"],
+        "summary": "Memperbarui layanan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Layanan diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Services"],
+        "summary": "Menghapus layanan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Layanan dihapus"
+          }
+        }
+      }
+    },
+    "/discounts": {
+      "get": {
+        "tags": ["Discounts"],
+        "summary": "Mendapatkan daftar diskon",
+        "parameters": [
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar diskon",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscountListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Discounts"],
+        "summary": "Membuat diskon",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscountCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Diskon dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscountResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/discounts/{id}": {
+      "get": {
+        "tags": ["Discounts"],
+        "summary": "Detail diskon",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail diskon",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscountResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Discounts"],
+        "summary": "Memperbarui diskon",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscountUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diskon diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscountResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Discounts"],
+        "summary": "Menghapus diskon",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Diskon dihapus"
+          }
+        }
+      }
+    },
+    "/outlets": {
+      "get": {
+        "tags": ["Outlets"],
+        "summary": "Mendapatkan outlet tenant",
+        "parameters": [
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar outlet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutletListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Outlets"],
+        "summary": "Membuat outlet",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutletCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Outlet dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutletResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/outlets/{id}": {
+      "get": {
+        "tags": ["Outlets"],
+        "summary": "Detail outlet",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail outlet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutletResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Outlets"],
+        "summary": "Memperbarui outlet",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutletUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outlet diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutletResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Outlets"],
+        "summary": "Menghapus outlet",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Outlet dihapus"
+          }
+        }
+      }
+    },
+    "/outlets/{outletId}/users": {
+      "get": {
+        "tags": ["Staff"],
+        "summary": "Mendapatkan user yang ditugaskan ke outlet",
+        "parameters": [
+          {
+            "name": "outletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar user outlet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Staff"],
+        "summary": "Menugaskan user ke outlet",
+        "parameters": [
+          {
+            "name": "outletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutletUserAssignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User ditugaskan ke outlet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutletUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/outlets/{outletId}/users/{userId}": {
+      "delete": {
+        "tags": ["Staff"],
+        "summary": "Menghapus penugasan user dari outlet",
+        "parameters": [
+          {
+            "name": "outletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Penugasan dihapus"
+          }
+        }
+      }
+    },
+    "/staff": {
+      "get": {
+        "tags": ["Staff"],
+        "summary": "Mendapatkan daftar staff tenant",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar staff",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Staff"],
+        "summary": "Membuat user staff",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Staff dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/staff/{id}": {
+      "get": {
+        "tags": ["Staff"],
+        "summary": "Detail staff",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail staff",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Staff"],
+        "summary": "Memperbarui staff",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Staff diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Mendapatkan daftar order",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["MENUNGGU_KONFIRMASI", "DIPROSES", "SELESAI", "DIAMBIL", "DIBATALKAN"]
+            }
+          },
+          {
+            "name": "outlet_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Orders"],
+        "summary": "Membuat order oleh staff/kasir",
+        "description": "Kasir membuat order laundry baru. Mendukung fitur multi-layanan (maksimal 1 layanan kiloan dan multi layanan satuan), penyesuaian berat desimal (kg) / kuantitas (pcs), catatan pengerjaan spesifik per item cucian, diskon, serta pencatatan pembayaran awal (DP atau Lunas via CASH, QRIS, atau Transfer Bank).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Detail order",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Orders"],
+        "summary": "Memperbarui data order",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/status": {
+      "patch": {
+        "tags": ["Orders"],
+        "summary": "Mengubah status order",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatusUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status order diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/history": {
+      "get": {
+        "tags": ["Order History"],
+        "summary": "Melihat riwayat status order",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Riwayat status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatusHistoryListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/payments": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Mendapatkan pembayaran order",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar pembayaran",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Mencatat pembayaran order",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pembayaran dicatat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Detail pembayaran",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail pembayaran",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Payments"],
+        "summary": "Memverifikasi/memperbarui pembayaran",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pembayaran diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/outlets/{outletId}/payment-methods": {
+      "get": {
+        "tags": ["Payment Methods"],
+        "summary": "Mendapatkan metode pembayaran outlet",
+        "parameters": [
+          {
+            "name": "outletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metode pembayaran",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Payment Methods"],
+        "summary": "Menambahkan metode pembayaran outlet",
+        "parameters": [
+          {
+            "name": "outletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentMethodCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Metode pembayaran dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment-methods/{id}": {
+      "get": {
+        "tags": ["Payment Methods"],
+        "summary": "Detail metode pembayaran",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail metode pembayaran",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Payment Methods"],
+        "summary": "Memperbarui metode pembayaran",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentMethodUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Metode pembayaran diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Payment Methods"],
+        "summary": "Menghapus metode pembayaran",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Metode pembayaran dihapus"
+          }
+        }
+      }
+    },
+    "/reports/summary": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Rekap pendapatan dan order",
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Tanggal inklusif dalam zona waktu tenant."
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Tanggal inklusif dalam zona waktu tenant."
+          },
+          {
+            "name": "outlet_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ringkasan laporan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tenant": {
+      "get": {
+        "tags": ["Staff"],
+        "summary": "Mendapatkan profil tenant aktif",
+        "responses": {
+          "200": {
+            "description": "Profil tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Staff"],
+        "summary": "Memperbarui profil tenant aktif",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenantUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profil tenant diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/orders": {
+      "post": {
+        "tags": ["Public Portal"],
+        "summary": "Membuat order melalui portal customer online",
+        "description": "Customer membuat order penjemputan/antar dari web publik tanpa login dan tanpa Bearer Token. Mendukung pemilihan multi-layanan (maksimal 1 layanan kiloan dengan kontrol berat desimal 0.5 kg + multi layanan satuan seperti bedcover, jas, sepatu), catatan khusus per item layanan, serta opsi pembayaran online (QRIS/Transfer Bank dengan konfirmasi referensi) atau tunai saat penjemputan.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicOrderCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order publik dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicOrderResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/track/{trackingToken}": {
+      "get": {
+        "tags": ["Public Portal"],
+        "summary": "Melacak order berdasarkan tracking token",
+        "description": "Customer melihat status order menggunakan tracking token yang sulit ditebak. Endpoint tidak membutuhkan login atau Bearer Token.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "trackingToken",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token tracking acak/unguessable milik order."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tracking order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicTrackingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/track/{trackingToken}/payments": {
+      "post": {
+        "tags": ["Public Portal"],
+        "summary": "Konfirmasi pembayaran online oleh customer",
+        "description": "Customer mengirimkan konfirmasi pembayaran (QRIS atau transfer bank) berdasarkan tracking token tanpa login dan tanpa Bearer Token.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "trackingToken",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token tracking order milik customer."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicPaymentConfirmationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Konfirmasi pembayaran berhasil dicatat dengan status pending verifikasi kasir",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Mendapatkan notifikasi user",
+        "parameters": [
+          {
+            "name": "unread_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar notifikasi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "tags": ["Notifications"],
+        "summary": "Menandai notifikasi sebagai telah dibaca",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifikasi diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit-logs": {
+      "get": {
+        "tags": ["Audit Logs"],
+        "summary": "Mendapatkan audit log tenant",
+        "parameters": [
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entity_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/tenants/{tenantSlug}": {
+      "get": {
+        "tags": ["Public Portal"],
+        "summary": "Mendapatkan data tenant, outlet publik, dan layanan",
+        "description": "Mengembalikan tenant, outlet aktif/public, dan service aktif untuk halaman order customer.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "tenantSlug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data storefront publik",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStorefrontResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/orders/{id}/cancel": {
+      "patch": {
+        "tags": ["Orders"],
+        "summary": "Membatalkan order",
+        "description": "Mengubah status menjadi DIBATALKAN tanpa menghapus data order.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notes": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order dibatalkan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/staff/{id}/deactivate": {
+      "patch": {
+        "tags": ["Staff"],
+        "summary": "Menonaktifkan staff",
+        "description": "Mengubah is_active menjadi false tanpa menghapus data user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Staff dinonaktifkan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Request tidak valid"
+      },
+      "Unauthorized": {
+        "description": "Bearer token tidak valid atau tidak tersedia"
+      },
+      "Forbidden": {
+        "description": "Tidak memiliki hak akses"
+      },
+      "NotFound": {
+        "description": "Data tidak ditemukan"
+      },
+      "Conflict": {
+        "description": "Data konflik/duplikat"
+      }
+    },
+    "schemas": {
+      "RootResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Lavendera API is running"
+          }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "tenant_name": {
+            "type": "string",
+            "example": "Boenda Laundry"
+          },
+          "tenant_slug": {
+            "type": "string",
+            "example": "boendalaundry"
+          },
+          "name": {
+            "type": "string",
+            "example": "Budi Santoso"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@boendalaundry.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8,
+            "example": "password123"
+          }
+        },
+        "required": ["tenant_name", "tenant_slug", "name", "email", "password"]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "tenant_slug": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "boendalaundry"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@boendalaundry.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "password123"
+          }
+        },
+        "required": ["tenant_slug", "email", "password"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "access_token": {
+                "type": "string"
+              },
+              "token_type": {
+                "type": "string",
+                "example": "Bearer"
+              },
+              "expires_in": {
+                "type": "integer",
+                "example": 86400
+              },
+              "user": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        }
+      },
+      "Tenant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "logo_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["ADMIN", "STAFF"]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Outlet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_public_order_enabled": {
+            "type": "boolean"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "total_orders": {
+            "type": "integer",
+            "readOnly": true
+          }
+        }
+      },
+      "ServiceCategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "example": 8000,
+            "description": "Harga dalam Rupiah sebagai bilangan bulat. Contoh Rp7.000 disimpan 7000."
+          },
+          "min_quantity": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1000,
+            "description": "Minimum quantity dalam unit terkecil yang digunakan aplikasi; untuk kg disarankan gram (1000 = 1 kg)."
+          },
+          "unit": {
+            "type": "string",
+            "example": "kg"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServiceCategory"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "Discount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["percentage", "fixed"]
+          },
+          "value": {
+            "type": "integer",
+            "format": "int64",
+            "example": 10
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "service_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "service_name": {
+            "type": "string",
+            "readOnly": true,
+            "example": "Cuci Komplit Reguler"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "example": 8000,
+            "readOnly": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "example": 3500,
+            "description": "Kuantitas dalam unit terkecil; untuk kg gunakan gram (3500 = 3,5 kg)."
+          },
+          "unit": {
+            "type": "string",
+            "readOnly": true,
+            "example": "kg",
+            "description": "Satuan dari service."
+          },
+          "subtotal": {
+            "type": "integer",
+            "format": "int64",
+            "example": 28000,
+            "readOnly": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outlet_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "received_by": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "example": 20000,
+            "description": "Nominal pembayaran dalam Rupiah sebagai bilangan bulat."
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": ["cash", "qris", "bank_transfer"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "verified", "rejected"]
+          },
+          "reference_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "verified_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OutletPaymentMethod": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outlet_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["qris", "bank_transfer"]
+          },
+          "provider_name": {
+            "type": "string",
+            "example": "BCA"
+          },
+          "account_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "qr_image_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderStatusHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["MENUNGGU_KONFIRMASI", "DIPROSES", "SELESAI", "DIAMBIL", "DIBATALKAN"]
+          },
+          "changed_by": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outlet_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "discount_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "order_number": {
+            "type": "string",
+            "example": "LV-2609-0001"
+          },
+          "tracking_token": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["MENUNGGU_KONFIRMASI", "DIPROSES", "SELESAI", "DIAMBIL", "DIBATALKAN"]
+          },
+          "subtotal": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "discount_amount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "paid_amount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "estimated_done": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canceled_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            }
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "type": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "sent_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "description": "NULL berarti belum dibaca."
+          }
+        }
+      },
+      "AuditLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "action": {
+            "type": "string"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "old_data": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "new_data": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TenantUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "logo_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "CustomerCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["name", "phone"]
+      },
+      "CustomerUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ServiceCategoryCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["name"]
+      },
+      "ServiceCategoryUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ServiceCreateRequest": {
+        "type": "object",
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "min_quantity": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "unit": {
+            "type": "string",
+            "example": "kg"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": ["name", "price", "min_quantity", "unit"]
+      },
+      "ServiceUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "min_quantity": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "unit": {
+            "type": "string",
+            "example": "kg"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "DiscountCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["percentage", "fixed"]
+          },
+          "value": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": ["name", "type", "value"]
+      },
+      "DiscountUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["percentage", "fixed"]
+          },
+          "value": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "OutletCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_public_order_enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": ["name", "slug"]
+      },
+      "OutletUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_public_order_enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "StaffCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8
+          },
+          "role": {
+            "type": "string",
+            "enum": ["ADMIN", "STAFF"],
+            "default": "STAFF"
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          },
+          "outlet_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": ["name", "email", "password"]
+      },
+      "StaffUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8,
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": ["ADMIN", "STAFF"]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "outlet_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "OutletUserAssignRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": ["user_id"]
+      },
+      "OrderItemCreateRequest": {
+        "type": "object",
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "example": 3500,
+            "description": "Kuantitas dalam unit terkecil; untuk kg gunakan gram."
+          }
+        },
+        "required": ["service_id", "quantity"]
+      },
+      "OrderCreateRequest": {
+        "type": "object",
+        "description": "Client hanya mengirim referensi outlet/customer, service dan quantity. Harga, subtotal, total, order_number, tracking_token, tenant_id dan created_by ditentukan server.",
+        "properties": {
+          "outlet_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "customer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerCreateRequest"
+              }
+            ],
+            "nullable": true
+          },
+          "discount_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/OrderItemCreateRequest"
+            }
+          },
+          "initial_payment_amount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "default": 0
+          },
+          "initial_payment_method": {
+            "type": "string",
+            "enum": ["cash", "qris", "bank_transfer"],
+            "nullable": true
+          },
+          "initial_payment_reference_number": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "estimated_done": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": ["outlet_id", "items"],
+        "example": {
+          "outlet_id": "01918a22-44df-7b58-9a2c-912837e40002",
+          "customer_id": "01918a22-44df-7b58-9a2c-912837e40005",
+          "discount_id": null,
+          "items": [
+            {
+              "service_id": "01918a22-44df-7b58-9a2c-912837e40010",
+              "service_name": "Cuci Komplit Reguler",
+              "quantity": 3.5,
+              "unit": "kg",
+              "price": 8000,
+              "subtotal": 28000,
+              "notes": "Kiloan: Pisahkan pakaian putih"
+            },
+            {
+              "service_id": "01918a22-44df-7b58-9a2c-912837e40013",
+              "service_name": "Bedcover King",
+              "quantity": 1,
+              "unit": "pcs",
+              "price": 35000,
+              "subtotal": 35000,
+              "notes": "Satuan: Noda kopi di sudut kanan"
+            },
+            {
+              "service_id": "01918a22-44df-7b58-9a2c-912837e40015",
+              "service_name": "Sepatu Sneakers",
+              "quantity": 2,
+              "unit": "pasang",
+              "price": 30000,
+              "subtotal": 60000,
+              "notes": "Satuan: Deep clean sol"
+            }
+          ],
+          "initial_payment_amount": 123000,
+          "initial_payment_method": "qris",
+          "initial_payment_reference_number": "QRIS-20260913-9012",
+          "notes": "Pesanan reguler kasir cabang Kemang",
+          "estimated_done": "2026-09-15T10:00:00.000Z"
+        }
+      },
+      "OrderUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "discount_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "estimated_done": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "OrderStatusUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["MENUNGGU_KONFIRMASI", "DIPROSES", "SELESAI", "DIAMBIL", "DIBATALKAN"]
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["status"]
+      },
+      "PaymentCreateRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": ["cash", "qris", "bank_transfer"]
+          },
+          "reference_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": ["amount", "payment_method"]
+      },
+      "PaymentUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "verified", "rejected"]
+          },
+          "reference_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PaymentMethodCreateRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["qris", "bank_transfer"]
+          },
+          "provider_name": {
+            "type": "string"
+          },
+          "account_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "qr_image_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": ["type", "provider_name", "account_name"]
+      },
+      "PaymentMethodUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["qris", "bank_transfer"]
+          },
+          "provider_name": {
+            "type": "string"
+          },
+          "account_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "qr_image_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "PublicOrderCreateRequest": {
+        "type": "object",
+        "required": ["tenant_slug", "outlet_id", "customer", "items"],
+        "description": "Customer membuat order tanpa login. Harga dan total dihitung server; customer tidak dapat menentukan discount, price atau subtotal.",
+        "properties": {
+          "tenant_slug": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "boendalaundry"
+          },
+          "outlet_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/PublicCustomerCreateRequest"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/OrderItemCreateRequest"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "example": {
+          "tenant_slug": "boendalaundry",
+          "outlet_id": "01918a22-44df-7b58-9a2c-912837e40002",
+          "customer": {
+            "name": "Budi Santoso",
+            "phone": "081234567890",
+            "address": "Jl. Melati No. 45, RT 02/RW 05, Kebayoran Baru, Jakarta Selatan"
+          },
+          "items": [
+            {
+              "service_id": "01918a22-44df-7b58-9a2c-912837e40010",
+              "service_name": "Cuci Komplit Reguler",
+              "quantity": 3.5,
+              "unit": "kg",
+              "price": 8000,
+              "subtotal": 28000,
+              "notes": "Kiloan: Pisahkan pakaian putih"
+            },
+            {
+              "service_id": "01918a22-44df-7b58-9a2c-912837e40013",
+              "service_name": "Bedcover King",
+              "quantity": 1,
+              "unit": "pcs",
+              "price": 35000,
+              "subtotal": 35000,
+              "notes": "Satuan: Bedcover motif bunga"
+            },
+            {
+              "service_id": "01918a22-44df-7b58-9a2c-912837e40015",
+              "service_name": "Sepatu Sneakers",
+              "quantity": 2,
+              "unit": "pasang",
+              "price": 30000,
+              "subtotal": 60000,
+              "notes": "Satuan: Deep clean sol"
+            }
+          ],
+          "payment_method": "qris",
+          "initial_paid_amount": 123000,
+          "initial_payment_reference": "QRIS-20260913-9821",
+          "notes": "Tolong jemput sebelum jam 15.00 WIB."
+        }
+      },
+      "PublicOrderResponse": {
+        "type": "object",
+        "properties": {
+          "order_number": {
+            "type": "string",
+            "example": "LV-2609-0001"
+          },
+          "tracking_token": {
+            "type": "string",
+            "example": "tr_c8f921ab04e7"
+          },
+          "tracking_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://lavendera.com/track/tr_c8f921ab04e7"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["MENUNGGU_KONFIRMASI", "DIPROSES", "SELESAI", "DIAMBIL", "DIBATALKAN"],
+            "example": "MENUNGGU_KONFIRMASI"
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": ["qris", "bank_transfer", "cash"],
+            "example": "qris"
+          },
+          "payment_status": {
+            "type": "string",
+            "enum": ["BELUM_LUNAS", "SEBAGIAN", "LUNAS"],
+            "example": "LUNAS"
+          },
+          "estimated_done": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "PublicTrackingResponse": {
+        "type": "object",
+        "properties": {
+          "order_number": {
+            "type": "string",
+            "example": "LV-2609-0001"
+          },
+          "outlet_name": {
+            "type": "string",
+            "example": "Lavendera Pusat Kemang"
+          },
+          "customer_name": {
+            "type": "string",
+            "example": "Bpk. Rahmat"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["MENUNGGU_KONFIRMASI", "DIPROSES", "SELESAI", "DIAMBIL", "DIBATALKAN"]
+          },
+          "total": {
+            "type": "integer",
+            "example": 123000,
+            "description": "Total tagihan seluruh layanan cucian"
+          },
+          "paid_amount": {
+            "type": "integer",
+            "example": 123000,
+            "description": "Total nominal yang telah dibayarkan"
+          },
+          "payment_status": {
+            "type": "string",
+            "enum": ["BELUM_LUNAS", "SEBAGIAN", "LUNAS"],
+            "example": "LUNAS"
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": ["qris", "bank_transfer", "cash"],
+            "example": "qris"
+          },
+          "estimated_done": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "example": "Tolong jemput sebelum jam 15.00 WIB"
+          },
+          "items": {
+            "type": "array",
+            "description": "Rincian layanan kiloan dan satuan yang dicuci",
+            "items": {
+              "$ref": "#/components/schemas/PublicTrackingItem"
+            }
+          },
+          "timeline": {
+            "type": "array",
+            "description": "Riwayat tahapan status pengerjaan cucian",
+            "items": {
+              "$ref": "#/components/schemas/OrderStatusHistory"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TenantResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Tenant"
+          }
+        }
+      },
+      "TenantListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tenant"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "UserListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "OutletResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Outlet"
+          }
+        }
+      },
+      "OutletListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Outlet"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "CustomerResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Customer"
+          }
+        }
+      },
+      "CustomerListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Customer"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "ServiceCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ServiceCategory"
+          }
+        }
+      },
+      "ServiceCategoryListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceCategory"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Service"
+          }
+        }
+      },
+      "ServiceListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Service"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "DiscountResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Discount"
+          }
+        }
+      },
+      "DiscountListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Discount"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "OrderResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Order"
+          }
+        }
+      },
+      "OrderListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "PaymentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Payment"
+          }
+        }
+      },
+      "PaymentListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "PaymentMethodResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/OutletPaymentMethod"
+          }
+        }
+      },
+      "PaymentMethodListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutletPaymentMethod"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "OrderStatusHistoryListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderStatusHistory"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "NotificationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Notification"
+          }
+        }
+      },
+      "NotificationListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "AuditLogListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditLog"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        }
+      },
+      "ReportSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "total_revenue": {
+                "type": "integer",
+                "format": "int64",
+                "example": 14250000
+              },
+              "total_orders": {
+                "type": "integer",
+                "example": 182
+              },
+              "paid_orders": {
+                "type": "integer"
+              },
+              "unpaid_orders": {
+                "type": "integer"
+              },
+              "payment_breakdown": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "example": 1,
+            "minimum": 1
+          },
+          "limit": {
+            "type": "integer",
+            "example": 20,
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "integer",
+            "example": 182,
+            "format": "int64"
+          },
+          "total_pages": {
+            "type": "integer",
+            "example": 10
+          }
+        }
+      },
+      "PublicCustomerCreateRequest": {
+        "type": "object",
+        "required": ["name", "phone"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "Budi"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 50,
+            "example": "08123456789"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PublicTrackingItem": {
+        "type": "object",
+        "properties": {
+          "service_name": {
+            "type": "string",
+            "example": "Cuci Komplit Reguler"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "example": 3500,
+            "description": "Kuantitas dalam unit terkecil; untuk kg gunakan gram."
+          },
+          "unit": {
+            "type": "string",
+            "example": "kg"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "example": 8000,
+            "description": "Harga satuan layanan"
+          },
+          "subtotal": {
+            "type": "integer",
+            "format": "int64",
+            "example": 28000,
+            "description": "Subtotal biaya untuk item layanan ini"
+          }
+        }
+      },
+      "OutletUserResponse": {
+        "type": "object",
+        "properties": {
+          "outlet_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PublicTenant": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "logo_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        },
+        "required": ["name", "slug"]
+      },
+      "PublicOutlet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["id", "name", "slug"]
+      },
+      "PublicService": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "min_quantity": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["id", "name", "price", "min_quantity", "unit"]
+      },
+      "PublicStorefront": {
+        "type": "object",
+        "properties": {
+          "tenant": {
+            "$ref": "#/components/schemas/PublicTenant"
+          },
+          "outlets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicOutlet"
+            }
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicService"
+            }
+          }
+        }
+      },
+      "PublicStorefrontResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PublicStorefront"
+          }
+        }
+      },
+      "PublicPaymentConfirmationRequest": {
+        "type": "object",
+        "required": ["amount", "payment_method", "reference_number"],
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": ["qris", "bank_transfer"]
+          },
+          "reference_number": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}
