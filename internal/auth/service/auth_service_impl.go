@@ -182,8 +182,8 @@ func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest)
 		Role:     "ADMIN",
 		IsActive: true,
 	}
-	// Create tenant + owner
-	if err := a.Repository.CreateTenantAndOwner(
+	// Create tenant + admin
+	if err := a.Repository.CreateTenantAndAdmin(
 		ctx,
 		tenant,
 		user,

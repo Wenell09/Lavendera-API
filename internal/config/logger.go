@@ -10,10 +10,6 @@ func NewLogger() *logrus.Logger {
 	logger := logrus.New()
 	logger.SetOutput(os.Stdout)
 	logger.SetLevel(logrus.InfoLevel)
-	logger.SetFormatter(
-		&logrus.TextFormatter{
-			FullTimestamp: true,
-		},
-	)
+	logger.SetFormatter(&logrus.JSONFormatter{})
 	return logger
 }

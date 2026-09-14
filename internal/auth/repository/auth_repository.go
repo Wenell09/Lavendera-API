@@ -7,7 +7,7 @@ import (
 )
 
 type AuthRepository interface {
-	CreateTenantAndOwner(
+	CreateTenantAndAdmin(
 		ctx context.Context,
 		tenant *models.Tenant,
 		user *models.User,
