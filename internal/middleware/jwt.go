@@ -1,55 +1,81 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/Wenell09/lavendera-api/internal/auth/service"
+	"github.com/Wenell09/lavendera-api/internal/config"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func JWTMiddleware(jwtSecret string) gin.HandlerFunc {
+func JWTMiddleware(jwtConfig config.JWTConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Header otorisasi tidak ditemukan"})
-			c.Abort()
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				gin.H{
+					"error": "Header otorisasi tidak ditemukan",
+				},
+			)
 			return
 		}
-
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Format token salah (gunakan Bearer <token>)"})
-			c.Abort()
+		parts := strings.Fields(authHeader)
+		if len(parts) != 2 ||
+			!strings.EqualFold(parts[0], "Bearer") {
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				gin.H{
+					"error": "Format token salah (gunakan Bearer <token>)",
+				},
+			)
 			return
 		}
-
 		tokenString := parts[1]
+		claims := &service.JWTClaims{}
+		token, err := jwt.ParseWithClaims(
+			tokenString,
+			claims,
+			func(token *jwt.Token) (interface{}, error) {
+				// Hanya izinkan HS256
+				if token.Method != jwt.SigningMethodHS256 {
+					return nil, jwt.ErrSignatureInvalid
+				}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("metode signing tidak sesuai: %v", token.Header["alg"])
-			}
-			return []byte(jwtSecret), nil
-		})
-
+				return []byte(jwtConfig.SecretKey), nil
+			},
+		)
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token tidak valid atau sudah kadaluwarsa"})
-			c.Abort()
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				gin.H{
+					"error": "Token tidak valid",
+				},
+			)
 			return
 		}
-
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Gagal membaca data dari token"})
-			c.Abort()
+		if claims.UserID == "" {
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				gin.H{
+					"error": "user_id tidak ditemukan dalam token",
+				},
+			)
 			return
 		}
-
-		c.Set("tenant_id", claims["tenant_id"])
-		c.Set("user_id", claims["user_id"])
-
+		if claims.TenantID == "" {
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				gin.H{
+					"error": "tenant_id tidak ditemukan dalam token",
+				},
+			)
+			return
+		}
+		c.Set("user_id", claims.UserID)
+		c.Set("tenant_id", claims.TenantID)
 		c.Next()
 	}
 }

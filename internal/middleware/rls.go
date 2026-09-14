@@ -1,63 +1,51 @@
 package middleware
 
 import (
-	"fmt"
-	"net/http"
-
+	"github.com/Wenell09/lavendera-api/internal/database"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
-func RLSMiddleware(db *pgxpool.Pool) gin.HandlerFunc {
+func RLSMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 1. Ambil tenant_id dari Gin Context yang diset oleh JWTMiddleware
-		tenantIDVal, exists := c.Get("tenant_id")
-		if !exists || tenantIDVal == nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Konteks tenant_id tidak ditemukan"})
+		tenantID, exists := c.Get("tenant_id")
+		if !exists {
+			c.AbortWithStatusJSON(401, gin.H{
+				"message": "tenant_id not found",
+			})
 			return
 		}
-
-		tenantID := fmt.Sprintf("%v", tenantIDVal)
-		if tenantID == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "tenant_id kosong"})
+		tx := db.Begin()
+		if tx.Error != nil {
+			c.AbortWithStatusJSON(500, gin.H{
+				"message": "failed to begin transaction",
+			})
 			return
 		}
-
-		ctx := c.Request.Context()
-
-		// 2. Ambil koneksi dari PGX Pool
-		conn, err := db.Acquire(ctx)
+		err := tx.Exec(
+			"SELECT set_config('app.current_tenant_id', ?, true)",
+			tenantID,
+		).Error
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Database connection pool exhausted"})
+			tx.Rollback()
+
+			c.AbortWithStatusJSON(500, gin.H{
+				"message": "failed to set tenant context",
+			})
 			return
 		}
-		defer conn.Release()
-
-		// 3. Mulai Transaksi PostgreSQL
-		tx, err := conn.Begin(ctx)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to begin transaction"})
-			return
-		}
-
-		// 4. Inject tenant_id ke Session Variable PostgreSQL
-		_, err = tx.Exec(ctx, "SET LOCAL app.current_tenant_id = $1;", tenantID)
-		if err != nil {
-			_ = tx.Rollback(ctx)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to set RLS context"})
-			return
-		}
-
-		// 5. Simpan transaksi PostgreSQL ke Gin Context untuk digunakan di Handler
-		c.Set("pgx_tx", tx)
-
+		ctx := database.WithTx(
+			c.Request.Context(),
+			tx,
+		)
+		c.Request = c.Request.WithContext(ctx)
 		c.Next()
-
-		// 6. Auto-Commit / Rollback sesuai HTTP status response
-		if c.Writer.Status() < 400 {
-			_ = tx.Commit(ctx)
-		} else {
-			_ = tx.Rollback(ctx)
+		if c.Writer.Status() >= 400 {
+			tx.Rollback()
+			return
+		}
+		if err := tx.Commit().Error; err != nil {
+			return
 		}
 	}
 }
