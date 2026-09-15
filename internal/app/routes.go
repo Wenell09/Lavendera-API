@@ -21,7 +21,9 @@ func NewRouter(
 	db *gorm.DB,
 	logger *logrus.Logger,
 ) *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
+	r.Use(middleware.LoggerMiddleware(logger))
+	r.Use(gin.Recovery())
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "success",
@@ -40,6 +42,5 @@ func NewRouter(
 	)
 	// Registrasi fitur yang membutuhkan autentikasi
 	serviceCategoryAuth.RegisterServiceCategoryRoutes(protectedGroup, serviceCategoryController)
-	_ = logger
 	return r
 }
