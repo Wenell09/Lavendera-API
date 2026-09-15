@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/Wenell09/lavendera-api/internal/contextutil"
 	"github.com/Wenell09/lavendera-api/internal/database"
 	"github.com/Wenell09/lavendera-api/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,7 @@ import (
 
 func RLSMiddleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tenantID, exists := c.Get("tenant_id")
+		tenantID, exists := contextutil.TenantIDFromContext(c.Request.Context())
 		if !exists {
 			c.AbortWithStatusJSON(
 				http.StatusUnauthorized,

@@ -8,7 +8,7 @@ import (
 	"github.com/google/wire"
 )
 
-var AuthWireSet = wire.NewSet(
+var WireSet = wire.NewSet(
 	repository.NewAuthRepository,
 	service.NewAuthService,
 	controller.NewAuthController,

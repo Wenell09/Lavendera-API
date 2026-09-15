@@ -6,6 +6,7 @@ import (
 
 	"github.com/Wenell09/lavendera-api/internal/auth/service"
 	"github.com/Wenell09/lavendera-api/internal/config"
+	"github.com/Wenell09/lavendera-api/internal/contextutil"
 	"github.com/Wenell09/lavendera-api/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -84,6 +85,16 @@ func JWTMiddleware(jwtConfig config.JWTConfig) gin.HandlerFunc {
 			)
 			return
 		}
+		ctx := c.Request.Context()
+		ctx = contextutil.WithUserID(
+			ctx,
+			claims.UserID,
+		)
+		ctx = contextutil.WithTenantID(
+			ctx,
+			claims.TenantID,
+		)
+		c.Request = c.Request.WithContext(ctx)
 		c.Set("user_id", claims.UserID)
 		c.Set("tenant_id", claims.TenantID)
 		c.Next()

@@ -3,22 +3,25 @@ package app
 import (
 	"net/http"
 
-	"github.com/Wenell09/lavendera-api/internal/auth/controller"
+	authController "github.com/Wenell09/lavendera-api/internal/auth/controller"
+	authRoutes "github.com/Wenell09/lavendera-api/internal/auth/routes"
 	"github.com/Wenell09/lavendera-api/internal/config"
 	"github.com/Wenell09/lavendera-api/internal/middleware"
+	serviceCategoryController "github.com/Wenell09/lavendera-api/internal/service_category/controller"
+	serviceCategoryAuth "github.com/Wenell09/lavendera-api/internal/service_category/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
 func NewRouter(
-	authController controller.AuthController,
+	authController authController.AuthController,
+	serviceCategoryController serviceCategoryController.ServiceCategoryController,
 	jwtConfig config.JWTConfig,
 	db *gorm.DB,
 	logger *logrus.Logger,
 ) *gin.Engine {
 	r := gin.Default()
-	// Public
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "success",
@@ -26,24 +29,17 @@ func NewRouter(
 		})
 	})
 	api := r.Group("/api/v1")
-	// Auth PUBLIC
-	auth := api.Group("/auth")
-	auth.POST(
-		"/register",
-		authController.Register,
-	)
-	auth.POST(
-		"/login",
-		authController.Login,
-	)
-	// Protected
-	protected := api.Group("")
-	protected.Use(
+	// Route public
+	publicGroup := api.Group("")
+	authRoutes.RegisterAuthRoutes(publicGroup, authController)
+	// Route protected
+	protectedGroup := api.Group("")
+	protectedGroup.Use(
 		middleware.JWTMiddleware(jwtConfig),
 		middleware.RLSMiddleware(db),
 	)
-	// protected.GET("/orders", ...)
-	// protected.POST("/orders", ...)
+	// Registrasi fitur yang membutuhkan autentikasi
+	serviceCategoryAuth.RegisterServiceCategoryRoutes(protectedGroup, serviceCategoryController)
 	_ = logger
 	return r
 }
