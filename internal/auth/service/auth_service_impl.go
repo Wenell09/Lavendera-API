@@ -118,13 +118,9 @@ func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (*dto
 
 // Register implements [AuthService].
 func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest) (*dto.RegisterResponse, error) {
-	a.Logger.WithFields(logrus.Fields{
-		"email": req.Email,
-		"slug":  req.Slug,
-	}).Info("register request started")
-
+	a.Logger.WithFields(logrus.Fields{"email": req.Email}).Info("register request started")
 	email := strings.ToLower(strings.TrimSpace(req.Email))
-	slug := strings.ToLower(strings.TrimSpace(req.Slug))
+	slug := utils.GenerateSlug(req.TenantName)
 	// Check email
 	emailExists, err := a.Repository.ExistsUserByEmail(
 		ctx,
