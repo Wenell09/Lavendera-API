@@ -5,7 +5,8 @@ import (
 
 	"github.com/Wenell09/lavendera-api/internal/auth/dto"
 	"github.com/Wenell09/lavendera-api/internal/auth/service"
-	"github.com/Wenell09/lavendera-api/internal/utils"
+	"github.com/Wenell09/lavendera-api/internal/shared/apperror"
+	"github.com/Wenell09/lavendera-api/internal/shared/response"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
@@ -37,7 +38,7 @@ func (a *AuthControllerImpl) Login(c *gin.Context) {
 			Warn("login failed: invalid JSON")
 		c.JSON(
 			http.StatusBadRequest,
-			utils.NewResponseError(
+			response.NewResponseError(
 				http.StatusBadRequest,
 				"Invalid request body",
 				err.Error(),
@@ -50,32 +51,32 @@ func (a *AuthControllerImpl) Login(c *gin.Context) {
 		validationErr, ok :=
 			err.(validator.ValidationErrors)
 		if ok {
-			utils.NewHandleError(
+			apperror.NewHandleError(
 				c,
-				utils.NewFieldError(validationErr),
+				apperror.NewFieldError(validationErr),
 			)
 			return
 		}
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	// Service
-	response, err := a.Service.Login(
+	result, err := a.Service.Login(
 		c.Request.Context(),
 		req,
 	)
 	if err != nil {
 		a.Logger.WithError(err).
 			Warn("login failed")
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	c.JSON(
 		http.StatusOK,
-		utils.NewResponseSuccess(
+		response.NewResponseSuccess(
 			http.StatusOK,
 			"Login successful",
-			response,
+			result,
 		),
 	)
 }
@@ -88,7 +89,7 @@ func (a *AuthControllerImpl) Register(c *gin.Context) {
 			Warn("register failed: invalid JSON")
 		c.JSON(
 			http.StatusBadRequest,
-			utils.NewResponseError(
+			response.NewResponseError(
 				http.StatusBadRequest,
 				"Invalid request body",
 				err.Error(),
@@ -100,32 +101,32 @@ func (a *AuthControllerImpl) Register(c *gin.Context) {
 	if err := a.Validator.Struct(req); err != nil {
 		validationErr, ok := err.(validator.ValidationErrors)
 		if ok {
-			utils.NewHandleError(
+			apperror.NewHandleError(
 				c,
-				utils.NewFieldError(validationErr),
+				apperror.NewFieldError(validationErr),
 			)
 			return
 		}
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	// Service
-	response, err := a.Service.Register(
+	result, err := a.Service.Register(
 		c.Request.Context(),
 		req,
 	)
 	if err != nil {
 		a.Logger.WithError(err).
 			Warn("register failed")
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	c.JSON(
 		http.StatusCreated,
-		utils.NewResponseSuccess(
+		response.NewResponseSuccess(
 			http.StatusCreated,
 			"Registration successful",
-			response,
+			result,
 		),
 	)
 }

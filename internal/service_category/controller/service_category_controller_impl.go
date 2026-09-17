@@ -5,7 +5,8 @@ import (
 
 	"github.com/Wenell09/lavendera-api/internal/service_category/dto"
 	"github.com/Wenell09/lavendera-api/internal/service_category/service"
-	"github.com/Wenell09/lavendera-api/internal/utils"
+	"github.com/Wenell09/lavendera-api/internal/shared/apperror"
+	"github.com/Wenell09/lavendera-api/internal/shared/response"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
@@ -33,9 +34,9 @@ func NewServiceCategoryController(
 func (s *ServiceCategoryControllerImpl) Create(c *gin.Context) {
 	var req dto.CreateServiceCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.NewHandleError(
+		apperror.NewHandleError(
 			c,
-			utils.ValidationError{
+			apperror.ValidationError{
 				Msg: "invalid request body",
 			},
 		)
@@ -43,13 +44,13 @@ func (s *ServiceCategoryControllerImpl) Create(c *gin.Context) {
 	}
 	if err := s.Validator.Struct(req); err != nil {
 		if ve, ok := err.(validator.ValidationErrors); ok {
-			utils.NewHandleError(
+			apperror.NewHandleError(
 				c,
-				utils.NewFieldError(ve),
+				apperror.NewFieldError(ve),
 			)
 			return
 		}
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	result, err := s.Service.Create(
@@ -57,12 +58,12 @@ func (s *ServiceCategoryControllerImpl) Create(c *gin.Context) {
 		req,
 	)
 	if err != nil {
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	c.JSON(
 		http.StatusCreated,
-		utils.NewResponseSuccess(
+		response.NewResponseSuccess(
 			http.StatusCreated,
 			"service category created successfully",
 			result,
@@ -77,12 +78,12 @@ func (s *ServiceCategoryControllerImpl) Delete(c *gin.Context) {
 		c.Request.Context(),
 		id,
 	); err != nil {
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	c.JSON(
 		http.StatusOK,
-		utils.NewResponseSuccess(
+		response.NewResponseSuccess(
 			http.StatusOK,
 			"service category deleted successfully",
 			nil,
@@ -96,12 +97,12 @@ func (s *ServiceCategoryControllerImpl) FindAll(c *gin.Context) {
 		c.Request.Context(),
 	)
 	if err != nil {
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	c.JSON(
 		http.StatusOK,
-		utils.NewResponseSuccess(
+		response.NewResponseSuccess(
 			http.StatusOK,
 			"service categories retrieved successfully",
 			result,
@@ -117,12 +118,12 @@ func (s *ServiceCategoryControllerImpl) FindByID(c *gin.Context) {
 		id,
 	)
 	if err != nil {
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	c.JSON(
 		http.StatusOK,
-		utils.NewResponseSuccess(
+		response.NewResponseSuccess(
 			http.StatusOK,
 			"service category retrieved successfully",
 			result,
@@ -135,9 +136,9 @@ func (s *ServiceCategoryControllerImpl) Update(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.UpdateServiceCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.NewHandleError(
+		apperror.NewHandleError(
 			c,
-			utils.ValidationError{
+			apperror.ValidationError{
 				Msg: "invalid request body",
 			},
 		)
@@ -145,13 +146,13 @@ func (s *ServiceCategoryControllerImpl) Update(c *gin.Context) {
 	}
 	if err := s.Validator.Struct(req); err != nil {
 		if ve, ok := err.(validator.ValidationErrors); ok {
-			utils.NewHandleError(
+			apperror.NewHandleError(
 				c,
-				utils.NewFieldError(ve),
+				apperror.NewFieldError(ve),
 			)
 			return
 		}
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	result, err := s.Service.Update(
@@ -160,12 +161,12 @@ func (s *ServiceCategoryControllerImpl) Update(c *gin.Context) {
 		req,
 	)
 	if err != nil {
-		utils.NewHandleError(c, err)
+		apperror.NewHandleError(c, err)
 		return
 	}
 	c.JSON(
 		http.StatusOK,
-		utils.NewResponseSuccess(
+		response.NewResponseSuccess(
 			http.StatusOK,
 			"service category updated successfully",
 			result,

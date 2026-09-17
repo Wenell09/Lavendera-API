@@ -1,1 +1,0 @@
-DROP FUNCTION IF EXISTS current_tenant_id() CASCADE;

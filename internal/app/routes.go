@@ -5,10 +5,10 @@ import (
 
 	authController "github.com/Wenell09/lavendera-api/internal/auth/controller"
 	authRoutes "github.com/Wenell09/lavendera-api/internal/auth/routes"
-	"github.com/Wenell09/lavendera-api/internal/config"
-	"github.com/Wenell09/lavendera-api/internal/middleware"
 	serviceCategoryController "github.com/Wenell09/lavendera-api/internal/service_category/controller"
 	serviceCategoryAuth "github.com/Wenell09/lavendera-api/internal/service_category/routes"
+	"github.com/Wenell09/lavendera-api/internal/shared/config"
+	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -38,7 +38,6 @@ func NewRouter(
 	protectedGroup := api.Group("")
 	protectedGroup.Use(
 		middleware.JWTMiddleware(jwtConfig),
-		middleware.RLSMiddleware(db),
 	)
 	// Registrasi fitur yang membutuhkan autentikasi
 	serviceCategoryAuth.RegisterServiceCategoryRoutes(protectedGroup, serviceCategoryController)

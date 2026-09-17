@@ -7,13 +7,13 @@ import (
 
 	"github.com/Wenell09/lavendera-api/internal/auth/dto"
 	"github.com/Wenell09/lavendera-api/internal/auth/repository"
-	"github.com/Wenell09/lavendera-api/internal/config"
 	"github.com/Wenell09/lavendera-api/internal/models"
-	"github.com/Wenell09/lavendera-api/internal/utils"
+	"github.com/Wenell09/lavendera-api/internal/shared/apperror"
+	"github.com/Wenell09/lavendera-api/internal/shared/config"
+	"github.com/Wenell09/lavendera-api/internal/shared/utils"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-
-	"github.com/sirupsen/logrus"
 )
 
 type AuthServiceImpl struct {
@@ -54,7 +54,7 @@ func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (*dto
 				"email",
 				email,
 			).Warn("login failed: invalid credentials")
-			return nil, utils.UnauthorizedError{
+			return nil, apperror.UnauthorizedError{
 				Msg: "invalid email or password",
 			}
 		}
@@ -69,7 +69,7 @@ func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (*dto
 			user.ID,
 		).Warn("login failed: user inactive")
 
-		return nil, utils.UnauthorizedError{
+		return nil, apperror.UnauthorizedError{
 			Msg: "user account is inactive",
 		}
 	}
@@ -82,12 +82,12 @@ func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (*dto
 			"email",
 			email,
 		).Warn("login failed: invalid credentials")
-		return nil, utils.UnauthorizedError{
+		return nil, apperror.UnauthorizedError{
 			Msg: "invalid email or password",
 		}
 	}
 	// Generate JWT
-	token, err := GenerateToken(
+	token, err := utils.GenerateToken(
 		user.ID.String(),
 		user.TenantID.String(),
 		a.JWTConfig,
@@ -134,7 +134,7 @@ func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest)
 	if emailExists {
 		a.Logger.WithField("email", email).
 			Warn("register failed: email already registered")
-		return nil, utils.ConflictError{
+		return nil, apperror.ConflictError{
 			Msg: "email already registered",
 		}
 	}
@@ -151,7 +151,7 @@ func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest)
 	if slugExists {
 		a.Logger.WithField("slug", slug).
 			Warn("register failed: tenant slug already exists")
-		return nil, utils.ConflictError{
+		return nil, apperror.ConflictError{
 			Msg: "tenant slug already exists",
 		}
 	}
@@ -178,18 +178,23 @@ func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest)
 		Role:     "ADMIN",
 		IsActive: true,
 	}
-	// Create tenant + admin
-	if err := a.Repository.CreateTenantAndAdmin(
+	categories := []*models.ServiceCategory{
+		{Name: "Kiloan"},
+		{Name: "Satuan"},
+	}
+	// Create admin+tenant+category default
+	if err := a.Repository.CreateDefaultAdmin(
 		ctx,
 		tenant,
 		user,
+		categories,
 	); err != nil {
 		// Handle race condition:
 		// dua request register email yang sama
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			a.Logger.WithError(err).
 				Warn("register failed: duplicated data")
-			return nil, utils.ConflictError{
+			return nil, apperror.ConflictError{
 				Msg: "email or tenant slug already exists",
 			}
 		}

@@ -18,7 +18,7 @@ func NewAuthRepository(db *gorm.DB) AuthRepository {
 }
 
 // CreateTenantAndAdmin implements [AuthRepository].
-func (a *AuthRepositoryImpl) CreateTenantAndAdmin(ctx context.Context, tenant *models.Tenant, user *models.User) error {
+func (a *AuthRepositoryImpl) CreateDefaultAdmin(ctx context.Context, tenant *models.Tenant, user *models.User, categories []*models.ServiceCategory) error {
 	return a.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Create tenant
 		if err := tx.Create(tenant).Error; err != nil {
@@ -28,6 +28,13 @@ func (a *AuthRepositoryImpl) CreateTenantAndAdmin(ctx context.Context, tenant *m
 		user.TenantID = tenant.ID
 		// Create admin
 		if err := tx.Create(user).Error; err != nil {
+			return err
+		}
+		for _, value := range categories {
+			value.TenantID = tenant.ID
+		}
+		// Create category default
+		if err := tx.Create(categories).Error; err != nil {
 			return err
 		}
 		return nil

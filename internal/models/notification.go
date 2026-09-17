@@ -7,14 +7,14 @@ import (
 )
 
 type Notification struct {
-	ID        uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	OrderID   *uuid.UUID `gorm:"type:uuid"`
-	UserID    *uuid.UUID `gorm:"type:uuid"`
-	Type      string     `gorm:"type:varchar(50);not null"`
-	Message   string     `gorm:"type:text;not null"`
+	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	OrderID   *uuid.UUID
+	UserID    *uuid.UUID
+	Type      string
+	Message   string
 	IsRead    bool
 	SentAt    *time.Time
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	Order     *Order    `gorm:"foreignKey:OrderID"`
-	User      *User     `gorm:"foreignKey:UserID"`
+	CreatedAt time.Time
+	Order     *Order
+	User      *User
 }

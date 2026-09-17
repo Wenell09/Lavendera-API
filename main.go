@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/Wenell09/lavendera-api/internal/app"
-	"github.com/Wenell09/lavendera-api/internal/config"
+	"github.com/Wenell09/lavendera-api/internal/shared/config"
 )
 
 func main() {

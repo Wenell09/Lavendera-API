@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/Wenell09/lavendera-api/internal/database"
 	"github.com/Wenell09/lavendera-api/internal/models"
+	"github.com/Wenell09/lavendera-api/internal/shared/database"
 	"gorm.io/gorm"
 )
 
@@ -21,89 +21,92 @@ func NewServiceCategoryRepository(
 }
 
 // Create implements [ServiceCategoryRepository].
-func (s *ServiceCategoryRepositoryImpl) Create(ctx context.Context, category *models.ServiceCategory) error {
-	tx, ok := database.TxFromContext(ctx)
-	if !ok {
-		return gorm.ErrInvalidDB
-	}
-	return tx.
+func (s *ServiceCategoryRepositoryImpl) Create(
+	ctx context.Context,
+	category *models.ServiceCategory,
+) error {
+	return s.DB.
 		WithContext(ctx).
 		Create(category).
 		Error
 }
 
 // Delete implements [ServiceCategoryRepository].
-func (s *ServiceCategoryRepositoryImpl) Delete(ctx context.Context, category *models.ServiceCategory) error {
-	tx, ok := database.TxFromContext(ctx)
-	if !ok {
-		return gorm.ErrInvalidDB
-	}
-	return tx.
+func (s *ServiceCategoryRepositoryImpl) Delete(
+	ctx context.Context,
+	category *models.ServiceCategory,
+) error {
+	return s.DB.
 		WithContext(ctx).
-		Delete(category).
+		Scopes(database.TenantScope(ctx)).
+		Where("id = ?", category.ID).
+		Delete(&models.ServiceCategory{}).
 		Error
 }
 
 // ExistsByName implements [ServiceCategoryRepository].
-func (s *ServiceCategoryRepositoryImpl) ExistsByName(ctx context.Context, name string) (bool, error) {
-	tx, ok := database.TxFromContext(ctx)
-	if !ok {
-		return false, gorm.ErrInvalidDB
-	}
+func (s *ServiceCategoryRepositoryImpl) ExistsByName(
+	ctx context.Context,
+	name string,
+) (bool, error) {
 	var count int64
-	if err := tx.
+	err := s.DB.
 		WithContext(ctx).
+		Scopes(database.TenantScope(ctx)).
 		Model(&models.ServiceCategory{}).
 		Where("name = ?", name).
 		Count(&count).
-		Error; err != nil {
+		Error
+	if err != nil {
 		return false, err
 	}
 	return count > 0, nil
 }
 
 // FindAll implements [ServiceCategoryRepository].
-func (s *ServiceCategoryRepositoryImpl) FindAll(ctx context.Context) ([]models.ServiceCategory, error) {
-	tx, ok := database.TxFromContext(ctx)
-	if !ok {
-		return nil, gorm.ErrInvalidDB
-	}
+func (s *ServiceCategoryRepositoryImpl) FindAll(
+	ctx context.Context,
+) ([]models.ServiceCategory, error) {
 	var categories []models.ServiceCategory
-	if err := tx.
+	err := s.DB.
 		WithContext(ctx).
+		Scopes(database.TenantScope(ctx)).
 		Order("created_at DESC").
 		Find(&categories).
-		Error; err != nil {
+		Error
+	if err != nil {
 		return nil, err
 	}
 	return categories, nil
 }
 
 // FindByID implements [ServiceCategoryRepository].
-func (s *ServiceCategoryRepositoryImpl) FindByID(ctx context.Context, id string) (*models.ServiceCategory, error) {
-	tx, ok := database.TxFromContext(ctx)
-	if !ok {
-		return nil, gorm.ErrInvalidDB
-	}
+func (s *ServiceCategoryRepositoryImpl) FindByID(
+	ctx context.Context,
+	id string,
+) (*models.ServiceCategory, error) {
 	category := &models.ServiceCategory{}
-	if err := tx.
+	err := s.DB.
 		WithContext(ctx).
+		Scopes(database.TenantScope(ctx)).
 		Where("id = ?", id).
 		First(category).
-		Error; err != nil {
+		Error
+	if err != nil {
 		return nil, err
 	}
 	return category, nil
 }
 
 // Update implements [ServiceCategoryRepository].
-func (s *ServiceCategoryRepositoryImpl) Update(ctx context.Context, category *models.ServiceCategory) error {
-	tx, ok := database.TxFromContext(ctx)
-	if !ok {
-		return gorm.ErrInvalidDB
-	}
-	return tx.
+func (s *ServiceCategoryRepositoryImpl) Update(
+	ctx context.Context,
+	category *models.ServiceCategory,
+) error {
+	return s.DB.
 		WithContext(ctx).
-		Save(category).
+		Scopes(database.TenantScope(ctx)).
+		Where("id = ?", category.ID).
+		Updates(category).
 		Error
 }

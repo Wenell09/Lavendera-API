@@ -7,10 +7,11 @@ import (
 )
 
 type AuthRepository interface {
-	CreateTenantAndAdmin(
+	CreateDefaultAdmin(
 		ctx context.Context,
 		tenant *models.Tenant,
 		user *models.User,
+		category []*models.ServiceCategory,
 	) error
 
 	FindUserByEmail(

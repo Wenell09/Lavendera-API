@@ -7,9 +7,9 @@ import (
 )
 
 type OutletUser struct {
-	OutletID  uuid.UUID `gorm:"type:uuid;primaryKey"`
-	UserID    uuid.UUID `gorm:"type:uuid;primaryKey"`
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	Outlet    Outlet    `gorm:"foreignKey:OutletID"`
-	User      User      `gorm:"foreignKey:UserID"`
+	OutletID  uuid.UUID `gorm:"primaryKey"`
+	UserID    uuid.UUID `gorm:"primaryKey"`
+	CreatedAt time.Time
+	Outlet    Outlet
+	User      User
 }

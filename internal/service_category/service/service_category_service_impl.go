@@ -5,13 +5,12 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/google/uuid"
-
-	"github.com/Wenell09/lavendera-api/internal/contextutil"
 	"github.com/Wenell09/lavendera-api/internal/models"
 	"github.com/Wenell09/lavendera-api/internal/service_category/dto"
 	"github.com/Wenell09/lavendera-api/internal/service_category/repository"
-	"github.com/Wenell09/lavendera-api/internal/utils"
+	"github.com/Wenell09/lavendera-api/internal/shared/apperror"
+	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -48,24 +47,23 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 		return nil, err
 	}
 	if exists {
-		return nil, utils.ConflictError{
+		return nil, apperror.ConflictError{
 			Msg: "service category name already exists",
 		}
 	}
 	category := &models.ServiceCategory{
-		Name:        name,
-		Description: req.Description,
+		Name: name,
 	}
 	// tenant_id akan diisi dari JWT context.
-	tenantID, exists := contextutil.TenantIDFromContext(ctx)
+	tenantID, exists := middleware.TenantIDFromContext(ctx)
 	if !exists {
-		return nil, utils.UnauthorizedError{
+		return nil, apperror.UnauthorizedError{
 			Msg: "tenant_id not found",
 		}
 	}
 	category.TenantID, err = uuid.Parse(tenantID)
 	if err != nil {
-		return nil, utils.UnauthorizedError{
+		return nil, apperror.UnauthorizedError{
 			Msg: "invalid tenant_id",
 		}
 	}
@@ -74,7 +72,7 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 		category,
 	); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, utils.ConflictError{
+			return nil, apperror.ConflictError{
 				Msg: "service category name already exists",
 			}
 		}
@@ -87,25 +85,24 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 		category.ID,
 	).Info("service category created")
 	return &dto.ServiceCategoryResponse{
-		ID:          category.ID.String(),
-		Name:        category.Name,
-		Description: category.Description,
-		CreatedAt:   category.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt:   category.UpdatedAt.Format("2006-01-02 15:04:05"),
+		ID:        category.ID.String(),
+		Name:      category.Name,
+		CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
 }
 
 // Delete implements [ServiceCategoryService].
 func (s *ServiceCategoryServiceImpl) Delete(ctx context.Context, id string) error {
 	if _, err := uuid.Parse(id); err != nil {
-		return utils.ValidationError{
+		return apperror.ValidationError{
 			Msg: "invalid service category id",
 		}
 	}
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return utils.NotFoundError{
+			return apperror.NotFoundError{
 				Msg: "service category not found",
 			}
 		}
@@ -145,11 +142,10 @@ func (s *ServiceCategoryServiceImpl) FindAll(ctx context.Context) (*dto.ServiceC
 		data = append(
 			data,
 			dto.ServiceCategoryResponse{
-				ID:          category.ID.String(),
-				Name:        category.Name,
-				Description: category.Description,
-				CreatedAt:   category.CreatedAt.Format("2006-01-02 15:04:05"),
-				UpdatedAt:   category.UpdatedAt.Format("2006-01-02 15:04:05"),
+				ID:        category.ID.String(),
+				Name:      category.Name,
+				CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
+				UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
 			},
 		)
 	}
@@ -161,14 +157,14 @@ func (s *ServiceCategoryServiceImpl) FindAll(ctx context.Context) (*dto.ServiceC
 // FindByID implements [ServiceCategoryService].
 func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id string) (*dto.ServiceCategoryResponse, error) {
 	if _, err := uuid.Parse(id); err != nil {
-		return nil, utils.ValidationError{
+		return nil, apperror.ValidationError{
 			Msg: "invalid service category id",
 		}
 	}
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, utils.NotFoundError{
+			return nil, apperror.NotFoundError{
 				Msg: "service category not found",
 			}
 		}
@@ -177,18 +173,17 @@ func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id string) (*
 		return nil, err
 	}
 	return &dto.ServiceCategoryResponse{
-		ID:          category.ID.String(),
-		Name:        category.Name,
-		Description: category.Description,
-		CreatedAt:   category.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt:   category.UpdatedAt.Format("2006-01-02 15:04:05"),
+		ID:        category.ID.String(),
+		Name:      category.Name,
+		CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
 }
 
 // Update implements [ServiceCategoryService].
 func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id string, req dto.UpdateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error) {
 	if _, err := uuid.Parse(id); err != nil {
-		return nil, utils.ValidationError{
+		return nil, apperror.ValidationError{
 			Msg: "invalid service category id",
 		}
 	}
@@ -196,7 +191,7 @@ func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id string, req 
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, utils.NotFoundError{
+			return nil, apperror.NotFoundError{
 				Msg: "service category not found",
 			}
 		}
@@ -212,19 +207,18 @@ func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id string, req 
 			return nil, err
 		}
 		if exists {
-			return nil, utils.ConflictError{
+			return nil, apperror.ConflictError{
 				Msg: "service category name already exists",
 			}
 		}
 	}
 	category.Name = name
-	category.Description = req.Description
 	if err := s.Repository.Update(
 		ctx,
 		category,
 	); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, utils.ConflictError{
+			return nil, apperror.ConflictError{
 				Msg: "service category name already exists",
 			}
 		}
@@ -238,10 +232,9 @@ func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id string, req 
 		category.ID,
 	).Info("service category updated")
 	return &dto.ServiceCategoryResponse{
-		ID:          category.ID.String(),
-		Name:        category.Name,
-		Description: category.Description,
-		CreatedAt:   category.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt:   category.UpdatedAt.Format("2006-01-02 15:04:05"),
+		ID:        category.ID.String(),
+		Name:      category.Name,
+		CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
 }

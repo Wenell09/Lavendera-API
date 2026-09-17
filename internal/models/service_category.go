@@ -7,10 +7,9 @@ import (
 )
 
 type ServiceCategory struct {
-	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	TenantID    uuid.UUID `gorm:"type:uuid;not null;index"`
-	Name        string    `gorm:"type:varchar(255);not null"`
-	Description string    `gorm:"type:varchar(255);not null"`
-	CreatedAt   time.Time `gorm:"autoCreateTime"`
-	UpdatedAt   time.Time `gorm:"autoUpdateTime"`
+	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	TenantID  uuid.UUID `gorm:"type:uuid;not null;index"`
+	Name      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

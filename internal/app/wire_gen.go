@@ -10,10 +10,12 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/auth/controller"
 	"github.com/Wenell09/lavendera-api/internal/auth/repository"
 	"github.com/Wenell09/lavendera-api/internal/auth/service"
-	"github.com/Wenell09/lavendera-api/internal/config"
 	controller2 "github.com/Wenell09/lavendera-api/internal/service_category/controller"
 	repository2 "github.com/Wenell09/lavendera-api/internal/service_category/repository"
 	service2 "github.com/Wenell09/lavendera-api/internal/service_category/service"
+	"github.com/Wenell09/lavendera-api/internal/shared/applogger"
+	"github.com/Wenell09/lavendera-api/internal/shared/appvalidator"
+	"github.com/Wenell09/lavendera-api/internal/shared/config"
 )
 
 // Injectors from wire.go:
@@ -22,9 +24,9 @@ func InitializeApp() (*App, error) {
 	db := NewDB()
 	authRepository := repository.NewAuthRepository(db)
 	jwtConfig := config.NewJWTConfig()
-	logger := config.NewLogger()
+	logger := applogger.NewLogger()
 	authService := service.NewAuthService(authRepository, jwtConfig, logger)
-	validate := config.NewValidator()
+	validate := appvalidator.NewValidator()
 	authController := controller.NewAuthController(authService, validate, logger)
 	serviceCategoryRepository := repository2.NewServiceCategoryRepository(db)
 	serviceCategoryService := service2.NewServiceCategoryService(serviceCategoryRepository, logger)

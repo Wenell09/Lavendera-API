@@ -1,0 +1,10 @@
+CREATE INDEX idx_customers_tenant ON customers (tenant_id);
+CREATE INDEX idx_users_tenant ON users (tenant_id);
+CREATE INDEX idx_outlets_tenant ON outlets (tenant_id);
+CREATE INDEX idx_services_tenant ON services (tenant_id);
+CREATE INDEX idx_orders_tenant ON orders (tenant_id);
+CREATE INDEX idx_orders_outlet ON orders (outlet_id);
+CREATE INDEX idx_orders_customer ON orders (customer_id);
+CREATE INDEX idx_orders_number ON orders (order_number);
+CREATE INDEX idx_order_items_order ON order_items (order_id);
+CREATE INDEX idx_payments_order ON payments (order_id);
