@@ -30,60 +30,47 @@ func NewServiceCategoryService(
 	}
 }
 
-// Create implements [ServiceCategoryService].
+// Helper internal untuk menyertakan context default pada logger
+func (s *ServiceCategoryServiceImpl) logWithCtx(ctx context.Context) *logrus.Entry {
+	entry := logrus.NewEntry(s.Logger)
+	if tenantID, ok := appcontext.TenantIDFromContext(ctx); ok {
+		entry = entry.WithField("tenant_id", tenantID)
+	}
+	return entry
+}
+
 func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error) {
 	name := strings.TrimSpace(req.Name)
-	s.Logger.WithField(
-		"name",
-		name,
-	).Info("create service category started")
-	exists, err := s.Repository.ExistsByName(
-		ctx,
-		name,
-	)
+	logger := s.logWithCtx(ctx).WithField("name", name)
+	exists, err := s.Repository.ExistsByName(ctx, name)
 	if err != nil {
-		s.Logger.WithError(err).
-			Error("failed to check service category name")
+		logger.WithError(err).Error("failed to check service category name existence")
 		return nil, err
 	}
 	if exists {
-		return nil, apperror.ConflictError{
-			Msg: "service category name already exists",
-		}
+		return nil, apperror.ConflictError{Msg: "service category name already exists"}
 	}
-	category := &models.ServiceCategory{
-		Name: name,
-	}
-	// tenant_id akan diisi dari JWT context.
 	tenantID, exists := appcontext.TenantIDFromContext(ctx)
 	if !exists {
-		return nil, apperror.UnauthorizedError{
-			Msg: "tenant_id not found",
-		}
+		return nil, apperror.UnauthorizedError{Msg: "tenant_id not found"}
 	}
-	category.TenantID, err = uuid.Parse(tenantID)
+	tenantUUID, err := uuid.Parse(tenantID)
 	if err != nil {
-		return nil, apperror.UnauthorizedError{
-			Msg: "invalid tenant_id",
-		}
+		return nil, apperror.UnauthorizedError{Msg: "invalid tenant_id"}
 	}
-	if err := s.Repository.Create(
-		ctx,
-		category,
-	); err != nil {
+	category := &models.ServiceCategory{
+		Name:     name,
+		TenantID: tenantUUID,
+	}
+
+	if err := s.Repository.Create(ctx, category); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, apperror.ConflictError{
-				Msg: "service category name already exists",
-			}
+			return nil, apperror.ConflictError{Msg: "service category name already exists"}
 		}
-		s.Logger.WithError(err).
-			Error("failed to create service category")
+		logger.WithError(err).Error("failed to create service category in database")
 		return nil, err
 	}
-	s.Logger.WithField(
-		"category_id",
-		category.ID,
-	).Info("service category created")
+	logger.WithField("category_id", category.ID).Info("service category created successfully")
 	return &dto.ServiceCategoryResponse{
 		ID:        category.ID.String(),
 		Name:      category.Name,
@@ -92,84 +79,56 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 	}, nil
 }
 
-// Delete implements [ServiceCategoryService].
 func (s *ServiceCategoryServiceImpl) Delete(ctx context.Context, id string) error {
+	logger := s.logWithCtx(ctx).WithField("category_id", id)
 	if _, err := uuid.Parse(id); err != nil {
-		return apperror.ValidationError{
-			Msg: "invalid service category id",
-		}
+		return apperror.ValidationError{Msg: "invalid service category id"}
 	}
+
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return apperror.NotFoundError{
-				Msg: "service category not found",
-			}
+			return apperror.NotFoundError{Msg: "service category not found"}
 		}
+		logger.WithError(err).Error("failed to find service category for deletion")
 		return err
 	}
-	if err := s.Repository.Delete(
-		ctx,
-		category,
-	); err != nil {
-		s.Logger.WithError(err).
-			Error("failed to delete service category")
-
+	if err := s.Repository.Delete(ctx, category); err != nil {
+		logger.WithError(err).Error("failed to delete service category from database")
 		return err
 	}
-	s.Logger.WithField(
-		"category_id",
-		id,
-	).Info("service category deleted")
+	logger.Info("service category deleted successfully")
 	return nil
 }
 
-// FindAll implements [ServiceCategoryService].
 func (s *ServiceCategoryServiceImpl) FindAll(ctx context.Context) (*dto.ServiceCategoryListResponse, error) {
-	s.Logger.Info("find all service categories started")
 	categories, err := s.Repository.FindAll(ctx)
 	if err != nil {
-		s.Logger.WithError(err).
-			Error("failed to find service categories")
+		s.logWithCtx(ctx).WithError(err).Error("failed to find all service categories")
 		return nil, err
 	}
-	data := make(
-		[]dto.ServiceCategoryResponse,
-		0,
-		len(categories),
-	)
+	data := make([]dto.ServiceCategoryResponse, 0, len(categories))
 	for _, category := range categories {
-		data = append(
-			data,
-			dto.ServiceCategoryResponse{
-				ID:        category.ID.String(),
-				Name:      category.Name,
-				CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
-				UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
-			},
-		)
+		data = append(data, dto.ServiceCategoryResponse{
+			ID:        category.ID.String(),
+			Name:      category.Name,
+			CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
+		})
 	}
-	return &dto.ServiceCategoryListResponse{
-		Data: data,
-	}, nil
+	return &dto.ServiceCategoryListResponse{Data: data}, nil
 }
 
-// FindByID implements [ServiceCategoryService].
 func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id string) (*dto.ServiceCategoryResponse, error) {
 	if _, err := uuid.Parse(id); err != nil {
-		return nil, apperror.ValidationError{
-			Msg: "invalid service category id",
-		}
+		return nil, apperror.ValidationError{Msg: "invalid service category id"}
 	}
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperror.NotFoundError{
-				Msg: "service category not found",
-			}
+			return nil, apperror.NotFoundError{Msg: "service category not found"}
 		}
-		s.Logger.WithError(err).
-			Error("failed to find service category")
+		s.logWithCtx(ctx).WithField("category_id", id).WithError(err).Error("failed to find service category by id")
 		return nil, err
 	}
 	return &dto.ServiceCategoryResponse{
@@ -180,57 +139,39 @@ func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id string) (*
 	}, nil
 }
 
-// Update implements [ServiceCategoryService].
 func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id string, req dto.UpdateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error) {
+	logger := s.logWithCtx(ctx).WithField("category_id", id)
 	if _, err := uuid.Parse(id); err != nil {
-		return nil, apperror.ValidationError{
-			Msg: "invalid service category id",
-		}
+		return nil, apperror.ValidationError{Msg: "invalid service category id"}
 	}
 	name := strings.TrimSpace(req.Name)
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperror.NotFoundError{
-				Msg: "service category not found",
-			}
+			return nil, apperror.NotFoundError{Msg: "service category not found"}
 		}
+		logger.WithError(err).Error("failed to find service category for update")
 		return nil, err
 	}
-	// Jika nama tidak berubah, tidak perlu cek duplicate.
 	if !strings.EqualFold(category.Name, name) {
-		exists, err := s.Repository.ExistsByName(
-			ctx,
-			name,
-		)
+		exists, err := s.Repository.ExistsByName(ctx, name)
 		if err != nil {
+			logger.WithField("new_name", name).WithError(err).Error("failed to check service category name existence")
 			return nil, err
 		}
 		if exists {
-			return nil, apperror.ConflictError{
-				Msg: "service category name already exists",
-			}
+			return nil, apperror.ConflictError{Msg: "service category name already exists"}
 		}
 	}
 	category.Name = name
-	if err := s.Repository.Update(
-		ctx,
-		category,
-	); err != nil {
+	if err := s.Repository.Update(ctx, category); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, apperror.ConflictError{
-				Msg: "service category name already exists",
-			}
+			return nil, apperror.ConflictError{Msg: "service category name already exists"}
 		}
-		s.Logger.WithError(err).
-			Error("failed to update service category")
-
+		logger.WithField("new_name", name).WithError(err).Error("failed to update service category in database")
 		return nil, err
 	}
-	s.Logger.WithField(
-		"category_id",
-		category.ID,
-	).Info("service category updated")
+	logger.Info("service category updated successfully")
 	return &dto.ServiceCategoryResponse{
 		ID:        category.ID.String(),
 		Name:      category.Name,

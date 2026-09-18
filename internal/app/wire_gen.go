@@ -30,7 +30,7 @@ func InitializeApp() (*App, error) {
 	authController := controller.NewAuthController(authService, validate, logger)
 	serviceCategoryRepository := repository2.NewServiceCategoryRepository(db)
 	serviceCategoryService := service2.NewServiceCategoryService(serviceCategoryRepository, logger)
-	serviceCategoryController := controller2.NewServiceCategoryController(serviceCategoryService, validate, logger)
+	serviceCategoryController := controller2.NewServiceCategoryController(serviceCategoryService, validate)
 	engine := NewRouter(authController, serviceCategoryController, jwtConfig, logger)
 	app := NewApp(engine, db, logger)
 	return app, nil

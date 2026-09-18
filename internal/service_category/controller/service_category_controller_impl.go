@@ -9,24 +9,20 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/response"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/sirupsen/logrus"
 )
 
 type ServiceCategoryControllerImpl struct {
 	Service   service.ServiceCategoryService
 	Validator *validator.Validate
-	Logger    *logrus.Logger
 }
 
 func NewServiceCategoryController(
 	service service.ServiceCategoryService,
 	validator *validator.Validate,
-	logger *logrus.Logger,
 ) ServiceCategoryController {
 	return &ServiceCategoryControllerImpl{
 		Service:   service,
 		Validator: validator,
-		Logger:    logger,
 	}
 }
 
