@@ -8,8 +8,8 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/models"
 	"github.com/Wenell09/lavendera-api/internal/service_category/dto"
 	"github.com/Wenell09/lavendera-api/internal/service_category/repository"
+	"github.com/Wenell09/lavendera-api/internal/shared/appcontext"
 	"github.com/Wenell09/lavendera-api/internal/shared/apperror"
-	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -55,7 +55,7 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 		Name: name,
 	}
 	// tenant_id akan diisi dari JWT context.
-	tenantID, exists := middleware.TenantIDFromContext(ctx)
+	tenantID, exists := appcontext.TenantIDFromContext(ctx)
 	if !exists {
 		return nil, apperror.UnauthorizedError{
 			Msg: "tenant_id not found",

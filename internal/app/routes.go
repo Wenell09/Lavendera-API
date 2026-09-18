@@ -11,14 +11,12 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 func NewRouter(
 	authController authController.AuthController,
 	serviceCategoryController serviceCategoryController.ServiceCategoryController,
 	jwtConfig config.JWTConfig,
-	db *gorm.DB,
 	logger *logrus.Logger,
 ) *gin.Engine {
 	r := gin.New()

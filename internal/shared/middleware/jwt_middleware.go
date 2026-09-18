@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Wenell09/lavendera-api/internal/shared/appcontext"
 	"github.com/Wenell09/lavendera-api/internal/shared/config"
 	"github.com/Wenell09/lavendera-api/internal/shared/response"
 	"github.com/Wenell09/lavendera-api/internal/shared/utils"
@@ -86,8 +87,8 @@ func JWTMiddleware(jwtConfig config.JWTConfig) gin.HandlerFunc {
 		}
 		// Simpan identity ke request context.
 		ctx := c.Request.Context()
-		ctx = WithUserID(ctx, claims.UserID)
-		ctx = WithTenantID(ctx, claims.TenantID)
+		ctx = appcontext.WithUserID(ctx, claims.UserID)
+		ctx = appcontext.WithTenantID(ctx, claims.TenantID)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}

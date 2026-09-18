@@ -31,7 +31,7 @@ func InitializeApp() (*App, error) {
 	serviceCategoryRepository := repository2.NewServiceCategoryRepository(db)
 	serviceCategoryService := service2.NewServiceCategoryService(serviceCategoryRepository, logger)
 	serviceCategoryController := controller2.NewServiceCategoryController(serviceCategoryService, validate, logger)
-	engine := NewRouter(authController, serviceCategoryController, jwtConfig, db, logger)
+	engine := NewRouter(authController, serviceCategoryController, jwtConfig, logger)
 	app := NewApp(engine, db, logger)
 	return app, nil
 }
