@@ -7,7 +7,6 @@ CREATE TABLE services (
     min_quantity BIGINT NOT NULL DEFAULT 1,
     unit VARCHAR(20) NOT NULL DEFAULT 'gram'CHECK (unit IN ('gram','pcs','pair')),
     duration_days INTEGER NOT NULL DEFAULT 1,
-    description TEXT,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
