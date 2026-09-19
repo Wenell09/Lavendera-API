@@ -54,15 +54,10 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 	if !exists {
 		return nil, apperror.UnauthorizedError{Msg: "tenant_id not found"}
 	}
-	tenantUUID, err := uuid.Parse(tenantID)
-	if err != nil {
-		return nil, apperror.UnauthorizedError{Msg: "invalid tenant_id"}
-	}
 	category := &models.ServiceCategory{
 		Name:     name,
-		TenantID: tenantUUID,
+		TenantID: tenantID,
 	}
-
 	if err := s.Repository.Create(ctx, category); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, apperror.ConflictError{Msg: "service category name already exists"}
@@ -79,11 +74,8 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 	}, nil
 }
 
-func (s *ServiceCategoryServiceImpl) Delete(ctx context.Context, id string) error {
+func (s *ServiceCategoryServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	logger := s.logWithCtx(ctx).WithField("category_id", id)
-	if _, err := uuid.Parse(id); err != nil {
-		return apperror.ValidationError{Msg: "invalid service category id"}
-	}
 
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
@@ -119,10 +111,7 @@ func (s *ServiceCategoryServiceImpl) FindAll(ctx context.Context) (*dto.ServiceC
 	return &dto.ServiceCategoryListResponse{Data: data}, nil
 }
 
-func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id string) (*dto.ServiceCategoryResponse, error) {
-	if _, err := uuid.Parse(id); err != nil {
-		return nil, apperror.ValidationError{Msg: "invalid service category id"}
-	}
+func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id uuid.UUID) (*dto.ServiceCategoryResponse, error) {
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -139,11 +128,8 @@ func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id string) (*
 	}, nil
 }
 
-func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id string, req dto.UpdateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error) {
+func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error) {
 	logger := s.logWithCtx(ctx).WithField("category_id", id)
-	if _, err := uuid.Parse(id); err != nil {
-		return nil, apperror.ValidationError{Msg: "invalid service category id"}
-	}
 	name := strings.TrimSpace(req.Name)
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {

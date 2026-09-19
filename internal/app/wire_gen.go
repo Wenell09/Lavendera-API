@@ -10,6 +10,9 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/auth/controller"
 	"github.com/Wenell09/lavendera-api/internal/auth/repository"
 	"github.com/Wenell09/lavendera-api/internal/auth/service"
+	controller3 "github.com/Wenell09/lavendera-api/internal/service/controller"
+	repository3 "github.com/Wenell09/lavendera-api/internal/service/repository"
+	service3 "github.com/Wenell09/lavendera-api/internal/service/service"
 	controller2 "github.com/Wenell09/lavendera-api/internal/service_category/controller"
 	repository2 "github.com/Wenell09/lavendera-api/internal/service_category/repository"
 	service2 "github.com/Wenell09/lavendera-api/internal/service_category/service"
@@ -31,7 +34,10 @@ func InitializeApp() (*App, error) {
 	serviceCategoryRepository := repository2.NewServiceCategoryRepository(db)
 	serviceCategoryService := service2.NewServiceCategoryService(serviceCategoryRepository, logger)
 	serviceCategoryController := controller2.NewServiceCategoryController(serviceCategoryService, validate)
-	engine := NewRouter(authController, serviceCategoryController, jwtConfig, logger)
+	serviceRepository := repository3.NewServiceRepository(db)
+	serviceService := service3.NewService(serviceRepository, logger, serviceCategoryRepository)
+	serviceController := controller3.NewServiceController(serviceService, validate)
+	engine := NewRouter(authController, serviceCategoryController, serviceController, jwtConfig, logger)
 	app := NewApp(engine, db, logger)
 	return app, nil
 }

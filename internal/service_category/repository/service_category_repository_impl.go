@@ -5,6 +5,7 @@ import (
 
 	"github.com/Wenell09/lavendera-api/internal/models"
 	"github.com/Wenell09/lavendera-api/internal/shared/database"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -83,7 +84,7 @@ func (s *ServiceCategoryRepositoryImpl) FindAll(
 // FindByID implements [ServiceCategoryRepository].
 func (s *ServiceCategoryRepositoryImpl) FindByID(
 	ctx context.Context,
-	id string,
+	id uuid.UUID,
 ) (*models.ServiceCategory, error) {
 	category := &models.ServiceCategory{}
 	err := s.DB.

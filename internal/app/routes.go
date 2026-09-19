@@ -5,8 +5,10 @@ import (
 
 	authController "github.com/Wenell09/lavendera-api/internal/auth/controller"
 	authRoutes "github.com/Wenell09/lavendera-api/internal/auth/routes"
+	serviceController "github.com/Wenell09/lavendera-api/internal/service/controller"
+	serviceRoutes "github.com/Wenell09/lavendera-api/internal/service/routes"
 	serviceCategoryController "github.com/Wenell09/lavendera-api/internal/service_category/controller"
-	serviceCategoryAuth "github.com/Wenell09/lavendera-api/internal/service_category/routes"
+	serviceCategoryRoutes "github.com/Wenell09/lavendera-api/internal/service_category/routes"
 	"github.com/Wenell09/lavendera-api/internal/shared/config"
 	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
 	"github.com/gin-gonic/gin"
@@ -16,6 +18,7 @@ import (
 func NewRouter(
 	authController authController.AuthController,
 	serviceCategoryController serviceCategoryController.ServiceCategoryController,
+	serviceController serviceController.ServiceController,
 	jwtConfig config.JWTConfig,
 	logger *logrus.Logger,
 ) *gin.Engine {
@@ -38,6 +41,7 @@ func NewRouter(
 		middleware.JWTMiddleware(jwtConfig),
 	)
 	// Registrasi fitur yang membutuhkan autentikasi
-	serviceCategoryAuth.RegisterServiceCategoryRoutes(protectedGroup, serviceCategoryController)
+	serviceCategoryRoutes.RegisterServiceCategoryRoutes(protectedGroup, serviceCategoryController)
+	serviceRoutes.RegisterServiceRoutes(protectedGroup, serviceController)
 	return r
 }

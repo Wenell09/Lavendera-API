@@ -9,6 +9,7 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/response"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 type ServiceCategoryControllerImpl struct {
@@ -69,7 +70,13 @@ func (s *ServiceCategoryControllerImpl) Create(c *gin.Context) {
 
 // Delete implements [ServiceCategoryController].
 func (s *ServiceCategoryControllerImpl) Delete(c *gin.Context) {
-	id := c.Param("id")
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		apperror.NewHandleError(c, apperror.ValidationError{
+			Msg: "invalid service id",
+		})
+		return
+	}
 	if err := s.Service.Delete(
 		c.Request.Context(),
 		id,
@@ -108,7 +115,13 @@ func (s *ServiceCategoryControllerImpl) FindAll(c *gin.Context) {
 
 // FindByID implements [ServiceCategoryController].
 func (s *ServiceCategoryControllerImpl) FindByID(c *gin.Context) {
-	id := c.Param("id")
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		apperror.NewHandleError(c, apperror.ValidationError{
+			Msg: "invalid service id",
+		})
+		return
+	}
 	result, err := s.Service.FindByID(
 		c.Request.Context(),
 		id,
@@ -129,7 +142,13 @@ func (s *ServiceCategoryControllerImpl) FindByID(c *gin.Context) {
 
 // Update implements [ServiceCategoryController].
 func (s *ServiceCategoryControllerImpl) Update(c *gin.Context) {
-	id := c.Param("id")
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		apperror.NewHandleError(c, apperror.ValidationError{
+			Msg: "invalid service id",
+		})
+		return
+	}
 	var req dto.UpdateServiceCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		apperror.NewHandleError(

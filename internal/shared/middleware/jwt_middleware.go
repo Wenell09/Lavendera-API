@@ -10,6 +10,7 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 func JWTMiddleware(jwtConfig config.JWTConfig) gin.HandlerFunc {
@@ -86,9 +87,35 @@ func JWTMiddleware(jwtConfig config.JWTConfig) gin.HandlerFunc {
 			return
 		}
 		// Simpan identity ke request context.
+		rawUserID := claims.UserID
+		userID, err := uuid.Parse(rawUserID)
+		if err != nil {
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				response.NewResponseError(
+					http.StatusUnauthorized,
+					"Unauthorized access",
+					"Invalid User ID format",
+				),
+			)
+			return
+		}
+		rawTenantID := claims.TenantID
+		tenantID, err := uuid.Parse(rawTenantID)
+		if err != nil {
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				response.NewResponseError(
+					http.StatusUnauthorized,
+					"Unauthorized access",
+					"Invalid Tenant ID format",
+				),
+			)
+			return
+		}
 		ctx := c.Request.Context()
-		ctx = appcontext.WithUserID(ctx, claims.UserID)
-		ctx = appcontext.WithTenantID(ctx, claims.TenantID)
+		ctx = appcontext.WithUserID(ctx, userID)
+		ctx = appcontext.WithTenantID(ctx, tenantID)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}

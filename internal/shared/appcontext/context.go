@@ -1,6 +1,10 @@
 package appcontext
 
-import "context"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type contextKey string
 
@@ -9,20 +13,20 @@ const (
 	TenantIDKey contextKey = "tenant_id"
 )
 
-func WithUserID(ctx context.Context, userID string) context.Context {
+func WithUserID(ctx context.Context, userID uuid.UUID) context.Context {
 	return context.WithValue(ctx, UserIDKey, userID)
 }
 
-func WithTenantID(ctx context.Context, tenantID string) context.Context {
+func WithTenantID(ctx context.Context, tenantID uuid.UUID) context.Context {
 	return context.WithValue(ctx, TenantIDKey, tenantID)
 }
 
-func UserIDFromContext(ctx context.Context) (string, bool) {
-	value, ok := ctx.Value(UserIDKey).(string)
+func UserIDFromContext(ctx context.Context) (uuid.UUID, bool) {
+	value, ok := ctx.Value(UserIDKey).(uuid.UUID)
 	return value, ok
 }
 
-func TenantIDFromContext(ctx context.Context) (string, bool) {
-	value, ok := ctx.Value(TenantIDKey).(string)
+func TenantIDFromContext(ctx context.Context) (uuid.UUID, bool) {
+	value, ok := ctx.Value(TenantIDKey).(uuid.UUID)
 	return value, ok
 }

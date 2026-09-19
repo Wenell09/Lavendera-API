@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Wenell09/lavendera-api/internal/models"
+	"github.com/google/uuid"
 )
 
 type ServiceCategoryRepository interface {
@@ -13,7 +14,7 @@ type ServiceCategoryRepository interface {
 
 	FindByID(
 		ctx context.Context,
-		id string,
+		id uuid.UUID,
 	) (*models.ServiceCategory, error)
 
 	ExistsByName(

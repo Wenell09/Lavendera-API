@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Wenell09/lavendera-api/internal/service_category/dto"
+	"github.com/google/uuid"
 )
 
 type ServiceCategoryService interface {
@@ -13,7 +14,7 @@ type ServiceCategoryService interface {
 
 	FindByID(
 		ctx context.Context,
-		id string,
+		id uuid.UUID,
 	) (*dto.ServiceCategoryResponse, error)
 
 	Create(
@@ -23,12 +24,12 @@ type ServiceCategoryService interface {
 
 	Update(
 		ctx context.Context,
-		id string,
+		id uuid.UUID,
 		req dto.UpdateServiceCategoryRequest,
 	) (*dto.ServiceCategoryResponse, error)
 
 	Delete(
 		ctx context.Context,
-		id string,
+		id uuid.UUID,
 	) error
 }
