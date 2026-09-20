@@ -34,14 +34,14 @@ func NewRouter(
 	api := r.Group("/api/v1")
 	// Route public
 	publicGroup := api.Group("")
-	authRoutes.RegisterAuthRoutes(publicGroup, authController)
+	authRoutes.RegisterRoutes(publicGroup, authController)
 	// Route protected
 	protectedGroup := api.Group("")
 	protectedGroup.Use(
 		middleware.JWTMiddleware(jwtConfig),
 	)
 	// Registrasi fitur yang membutuhkan autentikasi
-	serviceCategoryRoutes.RegisterServiceCategoryRoutes(protectedGroup, serviceCategoryController)
-	serviceRoutes.RegisterServiceRoutes(protectedGroup, serviceController)
+	serviceCategoryRoutes.RegisterRoutes(protectedGroup, serviceCategoryController)
+	serviceRoutes.RegisterRoutes(protectedGroup, serviceController)
 	return r
 }

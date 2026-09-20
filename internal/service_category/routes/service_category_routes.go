@@ -5,10 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterServiceCategoryRoutes(
-	router *gin.RouterGroup,
-	controller controller.ServiceCategoryController,
-) {
+func RegisterRoutes(router *gin.RouterGroup, controller controller.ServiceCategoryController) {
 	serviceCategory := router.Group("/service-categories")
 	serviceCategory.GET("", controller.FindAll)
 	serviceCategory.GET("/:id", controller.FindByID)

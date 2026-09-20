@@ -5,10 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterServiceRoutes(
-	router *gin.RouterGroup,
-	controller controller.ServiceController,
-) {
+func RegisterRoutes(router *gin.RouterGroup, controller controller.ServiceController) {
 	services := router.Group("/services")
 	services.POST("", controller.Create)
 	services.GET("", controller.FindAll)

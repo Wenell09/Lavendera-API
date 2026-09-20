@@ -8,28 +8,9 @@ import (
 )
 
 type ServiceCategoryService interface {
-	FindAll(
-		ctx context.Context,
-	) (*dto.ServiceCategoryListResponse, error)
-
-	FindByID(
-		ctx context.Context,
-		id uuid.UUID,
-	) (*dto.ServiceCategoryResponse, error)
-
-	Create(
-		ctx context.Context,
-		req dto.CreateServiceCategoryRequest,
-	) (*dto.ServiceCategoryResponse, error)
-
-	Update(
-		ctx context.Context,
-		id uuid.UUID,
-		req dto.UpdateServiceCategoryRequest,
-	) (*dto.ServiceCategoryResponse, error)
-
-	Delete(
-		ctx context.Context,
-		id uuid.UUID,
-	) error
+	FindAll(ctx context.Context) ([]dto.ServiceCategoryResponse, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*dto.ServiceCategoryResponse, error)
+	Create(ctx context.Context, req dto.CreateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error)
+	Update(ctx context.Context, id uuid.UUID, req dto.UpdateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error)
+	Delete(ctx context.Context, id uuid.UUID) error
 }

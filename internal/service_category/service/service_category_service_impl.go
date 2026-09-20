@@ -10,6 +10,7 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/service_category/repository"
 	"github.com/Wenell09/lavendera-api/internal/shared/appcontext"
 	"github.com/Wenell09/lavendera-api/internal/shared/apperror"
+	"github.com/Wenell09/lavendera-api/internal/shared/utils"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -20,28 +21,13 @@ type ServiceCategoryServiceImpl struct {
 	Logger     *logrus.Logger
 }
 
-func NewServiceCategoryService(
-	repository repository.ServiceCategoryRepository,
-	logger *logrus.Logger,
-) ServiceCategoryService {
-	return &ServiceCategoryServiceImpl{
-		Repository: repository,
-		Logger:     logger,
-	}
-}
-
-// Helper internal untuk menyertakan context default pada logger
-func (s *ServiceCategoryServiceImpl) logWithCtx(ctx context.Context) *logrus.Entry {
-	entry := logrus.NewEntry(s.Logger)
-	if tenantID, ok := appcontext.TenantIDFromContext(ctx); ok {
-		entry = entry.WithField("tenant_id", tenantID)
-	}
-	return entry
+func NewServiceCategoryService(repository repository.ServiceCategoryRepository, logger *logrus.Logger) ServiceCategoryService {
+	return &ServiceCategoryServiceImpl{Repository: repository, Logger: logger}
 }
 
 func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error) {
 	name := strings.TrimSpace(req.Name)
-	logger := s.logWithCtx(ctx).WithField("name", name)
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("name", name)
 	exists, err := s.Repository.ExistsByName(ctx, name)
 	if err != nil {
 		logger.WithError(err).Error("failed to check service category name existence")
@@ -67,16 +53,15 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 	}
 	logger.WithField("category_id", category.ID).Info("service category created successfully")
 	return &dto.ServiceCategoryResponse{
-		ID:        category.ID.String(),
+		ID:        category.ID,
 		Name:      category.Name,
-		CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
+		CreatedAt: category.CreatedAt,
+		UpdatedAt: category.UpdatedAt,
 	}, nil
 }
 
 func (s *ServiceCategoryServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
-	logger := s.logWithCtx(ctx).WithField("category_id", id)
-
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("category_id", id)
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -93,22 +78,22 @@ func (s *ServiceCategoryServiceImpl) Delete(ctx context.Context, id uuid.UUID) e
 	return nil
 }
 
-func (s *ServiceCategoryServiceImpl) FindAll(ctx context.Context) (*dto.ServiceCategoryListResponse, error) {
+func (s *ServiceCategoryServiceImpl) FindAll(ctx context.Context) ([]dto.ServiceCategoryResponse, error) {
 	categories, err := s.Repository.FindAll(ctx)
 	if err != nil {
-		s.logWithCtx(ctx).WithError(err).Error("failed to find all service categories")
+		utils.LogWithContext(s.Logger, ctx).WithError(err).Error("failed to find all service categories")
 		return nil, err
 	}
-	data := make([]dto.ServiceCategoryResponse, 0, len(categories))
+	data := []dto.ServiceCategoryResponse{}
 	for _, category := range categories {
 		data = append(data, dto.ServiceCategoryResponse{
-			ID:        category.ID.String(),
+			ID:        category.ID,
 			Name:      category.Name,
-			CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
+			CreatedAt: category.CreatedAt,
+			UpdatedAt: category.UpdatedAt,
 		})
 	}
-	return &dto.ServiceCategoryListResponse{Data: data}, nil
+	return data, nil
 }
 
 func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id uuid.UUID) (*dto.ServiceCategoryResponse, error) {
@@ -117,19 +102,19 @@ func (s *ServiceCategoryServiceImpl) FindByID(ctx context.Context, id uuid.UUID)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.NotFoundError{Msg: "service category not found"}
 		}
-		s.logWithCtx(ctx).WithField("category_id", id).WithError(err).Error("failed to find service category by id")
+		utils.LogWithContext(s.Logger, ctx).WithField("category_id", id).WithError(err).Error("failed to find service category by id")
 		return nil, err
 	}
 	return &dto.ServiceCategoryResponse{
-		ID:        category.ID.String(),
+		ID:        category.ID,
 		Name:      category.Name,
-		CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
+		CreatedAt: category.CreatedAt,
+		UpdatedAt: category.UpdatedAt,
 	}, nil
 }
 
 func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error) {
-	logger := s.logWithCtx(ctx).WithField("category_id", id)
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("category_id", id)
 	name := strings.TrimSpace(req.Name)
 	category, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
@@ -159,9 +144,9 @@ func (s *ServiceCategoryServiceImpl) Update(ctx context.Context, id uuid.UUID, r
 	}
 	logger.Info("service category updated successfully")
 	return &dto.ServiceCategoryResponse{
-		ID:        category.ID.String(),
+		ID:        category.ID,
 		Name:      category.Name,
-		CreatedAt: category.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt: category.UpdatedAt.Format("2006-01-02 15:04:05"),
+		CreatedAt: category.CreatedAt,
+		UpdatedAt: category.UpdatedAt,
 	}, nil
 }

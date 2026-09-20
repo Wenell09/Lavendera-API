@@ -1,12 +1,14 @@
 package dto
 
-type ServiceCategoryResponse struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
-}
+import (
+	"time"
 
-type ServiceCategoryListResponse struct {
-	Data []ServiceCategoryResponse `json:"data"`
+	"github.com/google/uuid"
+)
+
+type ServiceCategoryResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

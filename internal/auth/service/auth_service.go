@@ -7,13 +7,6 @@ import (
 )
 
 type AuthService interface {
-	Register(
-		ctx context.Context,
-		req dto.RegisterRequest,
-	) (*dto.RegisterResponse, error)
-
-	Login(
-		ctx context.Context,
-		req dto.LoginRequest,
-	) (*dto.LoginResponse, error)
+	Register(ctx context.Context, req dto.RegisterRequest) (*dto.RegisterResponse, error)
+	Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error)
 }

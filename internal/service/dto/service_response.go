@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type CategoryResponse struct {
 	ID   uuid.UUID `json:"id"`
@@ -10,14 +14,14 @@ type CategoryResponse struct {
 type ServiceResponse struct {
 	ID           uuid.UUID `json:"id"`
 	Category     CategoryResponse
-	Name         string `json:"name"`
-	Price        int64  `json:"price"`
-	MinQuantity  int64  `json:"min_quantity"`
-	Unit         string `json:"unit"`
-	DurationDays int64  `json:"duration_days"`
-	IsActive     bool   `json:"is_active"`
-	CreatedAt    string `json:"created_at"`
-	UpdatedAt    string `json:"updated_at"`
+	Name         string    `json:"name"`
+	Price        int64     `json:"price"`
+	MinQuantity  int64     `json:"min_quantity"`
+	Unit         string    `json:"unit"`
+	DurationDays int64     `json:"duration_days"`
+	IsActive     bool      `json:"is_active"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 type ServiceListResponse struct {

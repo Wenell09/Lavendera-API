@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math"
+	"strings"
 
 	"github.com/Wenell09/lavendera-api/internal/models"
 	"github.com/Wenell09/lavendera-api/internal/service/dto"
@@ -11,6 +12,7 @@ import (
 	categoryRepository "github.com/Wenell09/lavendera-api/internal/service_category/repository"
 	"github.com/Wenell09/lavendera-api/internal/shared/appcontext"
 	"github.com/Wenell09/lavendera-api/internal/shared/apperror"
+	"github.com/Wenell09/lavendera-api/internal/shared/utils"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -22,35 +24,15 @@ type ServiceImpl struct {
 	Logger             *logrus.Logger
 }
 
-func NewService(
-	serviceRepository repository.ServiceRepository,
-	logger *logrus.Logger,
-	categoryRepository categoryRepository.ServiceCategoryRepository,
-) Service {
-	return &ServiceImpl{
-		ServiceRepository:  serviceRepository,
-		Logger:             logger,
-		CategoryRepository: categoryRepository,
-	}
-}
-
-// Helper internal untuk menginjeksikan context ID (seperti tenant_id) ke log entry
-func (s *ServiceImpl) logCtx(ctx context.Context) *logrus.Entry {
-	entry := logrus.NewEntry(s.Logger)
-	if tenantID, ok := appcontext.TenantIDFromContext(ctx); ok {
-		entry = entry.WithField("tenant_id", tenantID)
-	}
-	return entry
+func NewService(serviceRepository repository.ServiceRepository, logger *logrus.Logger, categoryRepository categoryRepository.ServiceCategoryRepository) Service {
+	return &ServiceImpl{ServiceRepository: serviceRepository, Logger: logger, CategoryRepository: categoryRepository}
 }
 
 // Create implements [Service].
-func (s *ServiceImpl) Create(
-	ctx context.Context,
-	request dto.CreateServiceRequest,
-) (*dto.ServiceResponse, error) {
-	exists, err := s.ServiceRepository.ExistByName(ctx, request.Name)
+func (s *ServiceImpl) Create(ctx context.Context, request dto.CreateServiceRequest) (*dto.ServiceResponse, error) {
+	exists, err := s.ServiceRepository.ExistsByName(ctx, request.Name)
 	if err != nil {
-		s.logCtx(ctx).WithError(err).Error("failed to check service category name existence")
+		utils.LogWithContext(s.Logger, ctx).WithError(err).Error("failed to check service category name existence")
 		return nil, err
 	}
 	if exists {
@@ -74,91 +56,68 @@ func (s *ServiceImpl) Create(
 		DurationDays: request.DurationDays,
 		IsActive:     isActive,
 	}
-
-	logger := s.logCtx(ctx).WithFields(logrus.Fields{
+	logger := utils.LogWithContext(s.Logger, ctx).WithFields(logrus.Fields{
 		"service_name": service.Name,
 		"category_id":  service.CategoryID,
 	})
-
 	if err := s.ServiceRepository.Create(ctx, service); err != nil {
 		logger.WithError(err).Error("failed to create service in database")
 		return nil, err
 	}
-
 	createdService, err := s.ServiceRepository.FindByID(ctx, service.ID)
 	if err != nil {
 		logger.WithField("service_id", service.ID).WithError(err).Error("failed to fetch created service details")
 		return nil, err
 	}
-
 	logger.WithField("service_id", service.ID).Info("service created successfully")
-
 	response := mapServiceResponse(createdService)
 	return &response, nil
 }
 
 // FindAll implements [Service].
-func (s *ServiceImpl) FindAll(
-	ctx context.Context,
-	search string,
-	categoryID *uuid.UUID,
-	page int,
-	limit int,
-) (*dto.ServiceListResponse, error) {
-	if page < 1 {
-		page = 1
+func (s *ServiceImpl) FindAll(ctx context.Context, filter dto.ServiceFilter) (*dto.ServiceListResponse, error) {
+	if filter.Page < 1 {
+		filter.Page = 1
 	}
-	if limit < 1 {
-		limit = 10
+	if filter.Limit < 1 {
+		filter.Limit = 10
 	}
-	if limit > 100 {
-		limit = 100
+	if filter.Limit > 100 {
+		filter.Limit = 100
 	}
-
-	services, total, err := s.ServiceRepository.FindAll(
-		ctx,
-		search,
-		categoryID,
-		page,
-		limit,
-	)
+	services, total, err := s.ServiceRepository.FindAll(ctx, filter)
 	if err != nil {
-		s.logCtx(ctx).WithFields(logrus.Fields{
-			"search":      search,
-			"category_id": categoryID,
-			"page":        page,
-			"limit":       limit,
+		utils.LogWithContext(s.Logger, ctx).WithFields(logrus.Fields{
+			"search":      filter.Search,
+			"category_id": filter.CategoryID,
+			"page":        filter.Page,
+			"limit":       filter.Limit,
 		}).WithError(err).Error("failed to fetch services list")
 		return nil, err
 	}
-
 	data := []dto.ServiceResponse{}
 	for i := range services {
 		data = append(data, mapServiceResponse(&services[i]))
 	}
-
-	totalPages := int(math.Ceil(float64(total) / float64(limit)))
-
+	totalPages := int(math.Ceil(float64(total) / float64(filter.Limit)))
 	return &dto.ServiceListResponse{
 		Data:       data,
-		Page:       page,
-		Limit:      limit,
+		Page:       filter.Page,
+		Limit:      filter.Limit,
 		Total:      total,
 		TotalPages: totalPages,
 	}, nil
 }
 
 // FindByID implements [Service].
-func (s *ServiceImpl) FindByID(
-	ctx context.Context,
-	id uuid.UUID,
+func (s *ServiceImpl) FindByID(ctx context.Context, id uuid.UUID,
 ) (*dto.ServiceResponse, error) {
 	service, err := s.ServiceRepository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.NotFoundError{Msg: "service not found"}
 		}
-		s.logCtx(ctx).WithField("service_id", id).WithError(err).Error("failed to find service by id")
+		utils.LogWithContext(s.Logger, ctx).WithField("service_id", id).WithError(err).Error("failed to find service by id")
 		return nil, err
 	}
 	response := mapServiceResponse(service)
@@ -166,58 +125,83 @@ func (s *ServiceImpl) FindByID(
 }
 
 // Update implements [Service].
-func (s *ServiceImpl) Update(
-	ctx context.Context,
-	id uuid.UUID,
-	request dto.UpdateServiceRequest,
-) (*dto.ServiceResponse, error) {
-	logger := s.logCtx(ctx).WithField("service_id", id)
+func (s *ServiceImpl) Update(ctx context.Context, id uuid.UUID, request dto.UpdateServiceRequest) (*dto.ServiceResponse, error) {
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("service_id", id)
 	service, err := s.ServiceRepository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperror.NotFoundError{
-				Msg: "service not found",
-			}
+			return nil, apperror.NotFoundError{Msg: "service not found"}
 		}
-		logger.WithError(err).
-			Error("failed to find service for update")
+		logger.WithError(err).Error("failed to find service for update")
 		return nil, err
 	}
 	if request.CategoryID != nil {
-		category, err := s.CategoryRepository.FindByID(
-			ctx,
-			*request.CategoryID,
-		)
+		_, err := s.CategoryRepository.FindByID(ctx, *request.CategoryID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, apperror.NotFoundError{
-					Msg: "service category not found",
-				}
+				return nil, apperror.NotFoundError{Msg: "service category not found"}
 			}
-			logger.WithError(err).
-				Error("failed to find service category")
+			logger.WithError(err).Error("failed to find service category")
 			return nil, err
 		}
-		service.CategoryID = *request.CategoryID
-		service.Category = *category
 	}
-	updateServiceFields(service, request)
-	if err := s.ServiceRepository.Update(ctx, service); err != nil {
-		logger.WithError(err).
-			Error("failed to update service in database")
+	updateData := make(map[string]interface{})
+	if request.Name != nil {
+		newName := strings.TrimSpace(*request.Name)
+		if !strings.EqualFold(service.Name, newName) {
+			exists, err := s.ServiceRepository.ExistsByName(ctx, newName)
+			if err != nil {
+				logger.WithField("new_name", newName).WithError(err).Error("failed to check service name existence")
+				return nil, err
+			}
+			if exists {
+				return nil, apperror.ConflictError{Msg: "service name already exists"}
+			}
+		}
+		updateData["name"] = newName
+	}
+	if request.CategoryID != nil {
+		updateData["category_id"] = *request.CategoryID
+	}
+	if request.Price != nil {
+		updateData["price"] = *request.Price
+	}
+	if request.MinQuantity != nil {
+		updateData["min_quantity"] = *request.MinQuantity
+	}
+	if request.Unit != nil {
+		updateData["unit"] = *request.Unit
+	}
+	if request.DurationDays != nil {
+		updateData["duration_days"] = *request.DurationDays
+	}
+	if request.IsActive != nil {
+		updateData["is_active"] = *request.IsActive
+	}
+	if len(updateData) == 0 {
+		response := mapServiceResponse(service)
+		return &response, nil
+	}
+	if err := s.ServiceRepository.Update(ctx, id, updateData); err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, apperror.ConflictError{Msg: "service name already exists"}
+		}
+		logger.WithError(err).Error("failed to update service in database")
+		return nil, err
+	}
+	updatedService, err := s.ServiceRepository.FindByID(ctx, id)
+	if err != nil {
+		logger.WithError(err).Error("failed to fetch updated service")
 		return nil, err
 	}
 	logger.Info("service updated successfully")
-	response := mapServiceResponse(service)
+	response := mapServiceResponse(updatedService)
 	return &response, nil
 }
 
 // Delete implements [Service].
-func (s *ServiceImpl) Delete(
-	ctx context.Context,
-	id uuid.UUID,
-) error {
-	logger := s.logCtx(ctx).WithField("service_id", id)
+func (s *ServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("service_id", id)
 	_, err := s.ServiceRepository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -226,12 +210,10 @@ func (s *ServiceImpl) Delete(
 		logger.WithError(err).Error("failed to find service for deletion")
 		return err
 	}
-
 	if err := s.ServiceRepository.Delete(ctx, id); err != nil {
 		logger.WithError(err).Error("failed to delete service from database")
 		return err
 	}
-
 	logger.Info("service deleted successfully")
 	return nil
 }
@@ -249,31 +231,7 @@ func mapServiceResponse(service *models.Service) dto.ServiceResponse {
 		Unit:         service.Unit,
 		DurationDays: service.DurationDays,
 		IsActive:     service.IsActive,
-		CreatedAt:    service.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt:    service.UpdatedAt.Format("2006-01-02 15:04:05"),
-	}
-}
-
-func updateServiceFields(
-	service *models.Service,
-	request dto.UpdateServiceRequest,
-) {
-	if request.Name != nil {
-		service.Name = *request.Name
-	}
-	if request.Price != nil {
-		service.Price = *request.Price
-	}
-	if request.MinQuantity != nil {
-		service.MinQuantity = *request.MinQuantity
-	}
-	if request.Unit != nil {
-		service.Unit = *request.Unit
-	}
-	if request.DurationDays != nil {
-		service.DurationDays = *request.DurationDays
-	}
-	if request.IsActive != nil {
-		service.IsActive = *request.IsActive
+		CreatedAt:    service.CreatedAt,
+		UpdatedAt:    service.UpdatedAt,
 	}
 }

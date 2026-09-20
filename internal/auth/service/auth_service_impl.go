@@ -22,88 +22,36 @@ type AuthServiceImpl struct {
 	Logger     *logrus.Logger
 }
 
-func NewAuthService(
-	repository repository.AuthRepository,
-	jwtConfig config.JWTConfig,
-	logger *logrus.Logger,
-) AuthService {
-	return &AuthServiceImpl{
-		Repository: repository,
-		JWTConfig:  jwtConfig,
-		Logger:     logger,
-	}
+func NewAuthService(repository repository.AuthRepository, jwtConfig config.JWTConfig, logger *logrus.Logger) AuthService {
+	return &AuthServiceImpl{Repository: repository, JWTConfig: jwtConfig, Logger: logger}
 }
 
-// Login implements [AuthService].
 func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error) {
-	a.Logger.WithField(
-		"email",
-		req.Email,
-	).Info("login request started")
-	email := strings.ToLower(
-		strings.TrimSpace(req.Email),
-	)
-	// Find user
-	user, err := a.Repository.FindUserByEmail(
-		ctx,
-		email,
-	)
+	a.Logger.WithField("email", req.Email).Info("login request started")
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+	user, err := a.Repository.FindUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			a.Logger.WithField(
-				"email",
-				email,
-			).Warn("login failed: invalid credentials")
-			return nil, apperror.UnauthorizedError{
-				Msg: "invalid email or password",
-			}
+			a.Logger.WithField("email", email).Warn("login failed: invalid credentials")
+			return nil, apperror.UnauthorizedError{Msg: "invalid email or password"}
 		}
-		a.Logger.WithError(err).
-			Error("failed to find user")
+		a.Logger.WithError(err).Error("failed to find user")
 		return nil, err
 	}
-	// Check active user
 	if !user.IsActive {
-		a.Logger.WithField(
-			"user_id",
-			user.ID,
-		).Warn("login failed: user inactive")
-
-		return nil, apperror.UnauthorizedError{
-			Msg: "user account is inactive",
-		}
+		a.Logger.WithField("user_id", user.ID).Warn("login failed: user inactive")
+		return nil, apperror.UnauthorizedError{Msg: "user account is inactive"}
 	}
-	// Compare password
-	if err := bcrypt.CompareHashAndPassword(
-		[]byte(user.Password),
-		[]byte(req.Password),
-	); err != nil {
-		a.Logger.WithField(
-			"email",
-			email,
-		).Warn("login failed: invalid credentials")
-		return nil, apperror.UnauthorizedError{
-			Msg: "invalid email or password",
-		}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		a.Logger.WithField("email", email).Warn("login failed: invalid credentials")
+		return nil, apperror.UnauthorizedError{Msg: "invalid email or password"}
 	}
-	// Generate JWT
-	token, err := utils.GenerateToken(
-		user.ID.String(),
-		user.TenantID.String(),
-		a.JWTConfig,
-	)
+	token, err := utils.GenerateToken(user.ID.String(), user.TenantID.String(), a.JWTConfig)
 	if err != nil {
-		a.Logger.WithError(err).
-			Error("failed to generate JWT")
-
+		a.Logger.WithError(err).Error("failed to generate JWT")
 		return nil, err
 	}
-
-	a.Logger.WithFields(logrus.Fields{
-		"user_id":   user.ID,
-		"tenant_id": user.TenantID,
-	}).Info("login successful")
-
+	a.Logger.WithFields(logrus.Fields{"user_id": user.ID, "tenant_id": user.TenantID}).Info("login successful")
 	return &dto.LoginResponse{
 		User: dto.UserResponse{
 			ID:       user.ID.String(),
@@ -116,110 +64,47 @@ func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (*dto
 	}, nil
 }
 
-// Register implements [AuthService].
 func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest) (*dto.RegisterResponse, error) {
 	a.Logger.WithFields(logrus.Fields{"email": req.Email}).Info("register request started")
 	email := strings.ToLower(strings.TrimSpace(req.Email))
 	slug := utils.GenerateSlug(req.TenantName)
-	// Check email
-	emailExists, err := a.Repository.ExistsUserByEmail(
-		ctx,
-		email,
-	)
+	emailExists, err := a.Repository.ExistsUserByEmail(ctx, email)
 	if err != nil {
-		a.Logger.WithError(err).
-			Error("failed to check email availability")
+		a.Logger.WithError(err).Error("failed to check email availability")
 		return nil, err
 	}
 	if emailExists {
-		a.Logger.WithField("email", email).
-			Warn("register failed: email already registered")
-		return nil, apperror.ConflictError{
-			Msg: "email already registered",
-		}
+		a.Logger.WithField("email", email).Warn("register failed: email already registered")
+		return nil, apperror.ConflictError{Msg: "email already registered"}
 	}
-	// Check tenant slug
-	slugExists, err := a.Repository.ExistsTenantBySlug(
-		ctx,
-		slug,
-	)
+	slugExists, err := a.Repository.ExistsTenantBySlug(ctx, slug)
 	if err != nil {
-		a.Logger.WithError(err).
-			Error("failed to check tenant slug availability")
+		a.Logger.WithError(err).Error("failed to check tenant slug availability")
 		return nil, err
 	}
 	if slugExists {
-		a.Logger.WithField("slug", slug).
-			Warn("register failed: tenant slug already exists")
-		return nil, apperror.ConflictError{
-			Msg: "tenant slug already exists",
-		}
+		a.Logger.WithField("slug", slug).Warn("register failed: tenant slug already exists")
+		return nil, apperror.ConflictError{Msg: "tenant slug already exists"}
 	}
-	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(req.Password),
-		bcrypt.DefaultCost,
-	)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		a.Logger.WithError(err).
-			Error("failed to hash password")
+		a.Logger.WithError(err).Error("failed to hash password")
 		return nil, err
 	}
-	// Create models
-	tenant := &models.Tenant{
-		Name:  req.TenantName,
-		Slug:  slug,
-		Email: email,
-	}
-	user := &models.User{
-		Name:     req.Name,
-		Email:    email,
-		Password: string(hashedPassword),
-		Role:     "ADMIN",
-		IsActive: true,
-	}
-	categories := []*models.ServiceCategory{
-		{Name: "Kiloan"},
-		{Name: "Satuan"},
-	}
-	// Create admin+tenant+category default
-	if err := a.Repository.CreateDefaultAdmin(
-		ctx,
-		tenant,
-		user,
-		categories,
-	); err != nil {
-		// Handle race condition:
-		// dua request register email yang sama
+	tenant := &models.Tenant{Name: req.TenantName, Slug: slug, Email: email}
+	user := &models.User{Name: req.Name, Email: email, Password: string(hashedPassword), Role: "ADMIN", IsActive: true}
+	categories := []models.ServiceCategory{{Name: "Kiloan"}, {Name: "Satuan"}}
+	if err := a.Repository.CreateDefaultAdmin(ctx, tenant, user, categories); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			a.Logger.WithError(err).
-				Warn("register failed: duplicated data")
-			return nil, apperror.ConflictError{
-				Msg: "email or tenant slug already exists",
-			}
+			a.Logger.WithError(err).Warn("register failed: duplicated data")
+			return nil, apperror.ConflictError{Msg: "email or tenant slug already exists"}
 		}
-		a.Logger.WithError(err).
-			Error("failed to create tenant and owner")
+		a.Logger.WithError(err).Error("failed to create tenant and owner")
 		return nil, err
 	}
-	a.Logger.WithFields(logrus.Fields{
-		"tenant_id": tenant.ID,
-		"user_id":   user.ID,
-		"email":     email,
-	}).Info("register successful")
+	a.Logger.WithFields(logrus.Fields{"tenant_id": tenant.ID, "user_id": user.ID, "email": email}).Info("register successful")
 	return &dto.RegisterResponse{
-		Tenant: dto.TenantResponse{
-			ID:    tenant.ID.String(),
-			Name:  tenant.Name,
-			Slug:  tenant.Slug,
-			Email: tenant.Email,
-		},
-		User: dto.UserResponse{
-			ID:       user.ID.String(),
-			TenantID: user.TenantID.String(),
-			Name:     user.Name,
-			Email:    user.Email,
-			Role:     user.Role,
-		},
+		Tenant: dto.TenantResponse{ID: tenant.ID.String(), Name: tenant.Name, Slug: tenant.Slug, Email: tenant.Email},
+		User:   dto.UserResponse{ID: user.ID.String(), TenantID: user.TenantID.String(), Name: user.Name, Email: user.Email, Role: user.Role},
 	}, nil
 }

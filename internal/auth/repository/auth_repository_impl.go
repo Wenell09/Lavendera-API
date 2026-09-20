@@ -12,28 +12,22 @@ type AuthRepositoryImpl struct {
 }
 
 func NewAuthRepository(db *gorm.DB) AuthRepository {
-	return &AuthRepositoryImpl{
-		DB: db,
-	}
+	return &AuthRepositoryImpl{DB: db}
 }
 
 // CreateTenantAndAdmin implements [AuthRepository].
-func (a *AuthRepositoryImpl) CreateDefaultAdmin(ctx context.Context, tenant *models.Tenant, user *models.User, categories []*models.ServiceCategory) error {
+func (a *AuthRepositoryImpl) CreateDefaultAdmin(ctx context.Context, tenant *models.Tenant, user *models.User, categories []models.ServiceCategory) error {
 	return a.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Create tenant
 		if err := tx.Create(tenant).Error; err != nil {
 			return err
 		}
-		// Set tenant ID untuk admin
 		user.TenantID = tenant.ID
-		// Create admin
 		if err := tx.Create(user).Error; err != nil {
 			return err
 		}
-		for _, value := range categories {
-			value.TenantID = tenant.ID
+		for i := range categories {
+			categories[i].TenantID = tenant.ID
 		}
-		// Create category default
 		if err := tx.Create(categories).Error; err != nil {
 			return err
 		}
@@ -44,11 +38,7 @@ func (a *AuthRepositoryImpl) CreateDefaultAdmin(ctx context.Context, tenant *mod
 // ExistsTenantBySlug implements [AuthRepository].
 func (a *AuthRepositoryImpl) ExistsTenantBySlug(ctx context.Context, slug string) (bool, error) {
 	var count int64
-	err := a.DB.WithContext(ctx).
-		Model(&models.Tenant{}).
-		Where("slug = ?", slug).
-		Count(&count).Error
-	if err != nil {
+	if err := a.DB.WithContext(ctx).Model(&models.Tenant{}).Where("slug = ?", slug).Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
@@ -57,11 +47,7 @@ func (a *AuthRepositoryImpl) ExistsTenantBySlug(ctx context.Context, slug string
 // ExistsUserByEmail implements [AuthRepository].
 func (a *AuthRepositoryImpl) ExistsUserByEmail(ctx context.Context, email string) (bool, error) {
 	var count int64
-	err := a.DB.WithContext(ctx).
-		Model(&models.User{}).
-		Where("email = ?", email).
-		Count(&count).Error
-	if err != nil {
+	if err := a.DB.WithContext(ctx).Model(&models.User{}).Where("email = ?", email).Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
@@ -69,12 +55,9 @@ func (a *AuthRepositoryImpl) ExistsUserByEmail(ctx context.Context, email string
 
 // FindUserByEmail implements [AuthRepository].
 func (a *AuthRepositoryImpl) FindUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	var user models.User
-	err := a.DB.WithContext(ctx).
-		Where("email = ?", email).
-		First(&user).Error
-	if err != nil {
+	user := &models.User{}
+	if err := a.DB.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
-	return &user, nil
+	return user, nil
 }

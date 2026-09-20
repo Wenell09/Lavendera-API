@@ -8,32 +8,10 @@ import (
 )
 
 type ServiceCategoryRepository interface {
-	FindAll(
-		ctx context.Context,
-	) ([]models.ServiceCategory, error)
-
-	FindByID(
-		ctx context.Context,
-		id uuid.UUID,
-	) (*models.ServiceCategory, error)
-
-	ExistsByName(
-		ctx context.Context,
-		name string,
-	) (bool, error)
-
-	Create(
-		ctx context.Context,
-		category *models.ServiceCategory,
-	) error
-
-	Update(
-		ctx context.Context,
-		category *models.ServiceCategory,
-	) error
-
-	Delete(
-		ctx context.Context,
-		category *models.ServiceCategory,
-	) error
+	FindAll(ctx context.Context) ([]models.ServiceCategory, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*models.ServiceCategory, error)
+	ExistsByName(ctx context.Context, name string) (bool, error)
+	Create(ctx context.Context, category *models.ServiceCategory) error
+	Update(ctx context.Context, category *models.ServiceCategory) error
+	Delete(ctx context.Context, category *models.ServiceCategory) error
 }
