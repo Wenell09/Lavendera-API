@@ -15,6 +15,4 @@ type Discount struct {
 	IsActive  bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Tenant    Tenant
-	Orders    []Order
 }

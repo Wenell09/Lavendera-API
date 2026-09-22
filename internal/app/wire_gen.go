@@ -10,6 +10,9 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/auth/controller"
 	"github.com/Wenell09/lavendera-api/internal/auth/repository"
 	"github.com/Wenell09/lavendera-api/internal/auth/service"
+	controller4 "github.com/Wenell09/lavendera-api/internal/discount/controller"
+	repository4 "github.com/Wenell09/lavendera-api/internal/discount/repository"
+	service4 "github.com/Wenell09/lavendera-api/internal/discount/service"
 	controller3 "github.com/Wenell09/lavendera-api/internal/service/controller"
 	repository3 "github.com/Wenell09/lavendera-api/internal/service/repository"
 	service3 "github.com/Wenell09/lavendera-api/internal/service/service"
@@ -37,7 +40,10 @@ func InitializeApp() (*App, error) {
 	serviceRepository := repository3.NewServiceRepository(db)
 	serviceService := service3.NewService(serviceRepository, logger, serviceCategoryRepository)
 	serviceController := controller3.NewServiceController(serviceService, validate)
-	engine := NewRouter(authController, serviceCategoryController, serviceController, jwtConfig, logger)
+	discountRepository := repository4.NewDiscountRepository(db)
+	discountService := service4.NewDiscountService(discountRepository, logger)
+	discountController := controller4.NewDiscountController(discountService, validate)
+	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, jwtConfig, logger)
 	app := NewApp(engine, db, logger)
 	return app, nil
 }
