@@ -26,8 +26,8 @@ func (s *ServiceCategoryRepositoryImpl) Create(ctx context.Context, category *mo
 }
 
 // Delete implements [ServiceCategoryRepository].
-func (s *ServiceCategoryRepositoryImpl) Delete(ctx context.Context, category *models.ServiceCategory) error {
-	if err := s.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Delete(&models.ServiceCategory{}, category.ID).Error; err != nil {
+func (s *ServiceCategoryRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
+	if err := s.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Delete(&models.ServiceCategory{}, id).Error; err != nil {
 		return err
 	}
 	return nil

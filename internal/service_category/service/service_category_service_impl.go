@@ -28,6 +28,10 @@ func NewServiceCategoryService(repository repository.ServiceCategoryRepository, 
 func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateServiceCategoryRequest) (*dto.ServiceCategoryResponse, error) {
 	name := strings.TrimSpace(req.Name)
 	logger := utils.LogWithContext(s.Logger, ctx).WithField("name", name)
+	tenantID, exists := appcontext.TenantIDFromContext(ctx)
+	if !exists {
+		return nil, apperror.UnauthorizedError{Msg: "tenant_id not found"}
+	}
 	exists, err := s.Repository.ExistsByName(ctx, name)
 	if err != nil {
 		logger.WithError(err).Error("failed to check service category name existence")
@@ -35,10 +39,6 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 	}
 	if exists {
 		return nil, apperror.ConflictError{Msg: "service category name already exists"}
-	}
-	tenantID, exists := appcontext.TenantIDFromContext(ctx)
-	if !exists {
-		return nil, apperror.UnauthorizedError{Msg: "tenant_id not found"}
 	}
 	category := &models.ServiceCategory{
 		Name:     name,
@@ -62,7 +62,7 @@ func (s *ServiceCategoryServiceImpl) Create(ctx context.Context, req dto.CreateS
 
 func (s *ServiceCategoryServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	logger := utils.LogWithContext(s.Logger, ctx).WithField("category_id", id)
-	category, err := s.Repository.FindByID(ctx, id)
+	_, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return apperror.NotFoundError{Msg: "service category not found"}
@@ -70,7 +70,7 @@ func (s *ServiceCategoryServiceImpl) Delete(ctx context.Context, id uuid.UUID) e
 		logger.WithError(err).Error("failed to find service category for deletion")
 		return err
 	}
-	if err := s.Repository.Delete(ctx, category); err != nil {
+	if err := s.Repository.Delete(ctx, id); err != nil {
 		logger.WithError(err).Error("failed to delete service category from database")
 		return err
 	}

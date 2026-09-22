@@ -50,7 +50,7 @@ func (s *ServiceRepositoryImpl) FindAll(ctx context.Context, filter dto.ServiceF
 // FindByID implements [ServiceRepository].
 func (s *ServiceRepositoryImpl) FindByID(ctx context.Context, id uuid.UUID) (*models.Service, error) {
 	service := &models.Service{}
-	if err := s.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Preload("Category").First(&service, id).Error; err != nil {
+	if err := s.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Preload("Category").First(service, id).Error; err != nil {
 		return nil, err
 	}
 	return service, nil

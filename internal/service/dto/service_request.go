@@ -9,7 +9,7 @@ type CreateServiceRequest struct {
 	MinQuantity  int64     `json:"min_quantity" validate:"gt=0"`
 	Unit         string    `json:"unit" validate:"required"`
 	DurationDays int64     `json:"duration_days" validate:"gt=0"`
-	IsActive     *bool     `json:"is_active"`
+	IsActive     bool     `json:"is_active"`
 }
 
 type UpdateServiceRequest struct {

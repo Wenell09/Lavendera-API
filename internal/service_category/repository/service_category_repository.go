@@ -13,5 +13,5 @@ type ServiceCategoryRepository interface {
 	ExistsByName(ctx context.Context, name string) (bool, error)
 	Create(ctx context.Context, category *models.ServiceCategory) error
 	Update(ctx context.Context, category *models.ServiceCategory) error
-	Delete(ctx context.Context, category *models.ServiceCategory) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }

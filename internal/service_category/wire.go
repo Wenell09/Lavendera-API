@@ -1,4 +1,4 @@
-package servicecategory
+package service_category
 
 import (
 	"github.com/Wenell09/lavendera-api/internal/service_category/controller"
