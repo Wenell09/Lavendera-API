@@ -24,10 +24,14 @@ type ServiceResponse struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
+type PaginationResponse struct {
+	Page       int   `json:"page"`
+	Limit      int   `json:"limit"`
+	Total      int64 `json:"total"`
+	TotalPages int   `json:"total_pages"`
+}
+
 type ServiceListResponse struct {
-	Data       []ServiceResponse `json:"data"`
-	Page       int               `json:"page"`
-	Limit      int               `json:"limit"`
-	Total      int64             `json:"total"`
-	TotalPages int               `json:"total_pages"`
+	Data       []ServiceResponse
+	Pagination PaginationResponse
 }

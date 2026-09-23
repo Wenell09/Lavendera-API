@@ -40,7 +40,7 @@ func (s *ServiceCategoryControllerImpl) Create(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, response.NewResponseSuccess(http.StatusCreated, "service category created successfully", result))
+	c.JSON(http.StatusCreated, response.NewResponseSuccess(http.StatusCreated, "service category created successfully", result, response.ResponseMeta{}))
 }
 
 func (s *ServiceCategoryControllerImpl) Delete(c *gin.Context) {
@@ -53,7 +53,7 @@ func (s *ServiceCategoryControllerImpl) Delete(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service category deleted successfully", nil))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service category deleted successfully", nil, response.ResponseMeta{}))
 }
 
 func (s *ServiceCategoryControllerImpl) FindAll(c *gin.Context) {
@@ -62,7 +62,7 @@ func (s *ServiceCategoryControllerImpl) FindAll(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service categories retrieved successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service categories retrieved successfully", result, response.ResponseMeta{}))
 }
 
 func (s *ServiceCategoryControllerImpl) FindByID(c *gin.Context) {
@@ -76,7 +76,7 @@ func (s *ServiceCategoryControllerImpl) FindByID(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service category retrieved successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service category retrieved successfully", result, response.ResponseMeta{}))
 }
 
 func (s *ServiceCategoryControllerImpl) Update(c *gin.Context) {
@@ -103,5 +103,5 @@ func (s *ServiceCategoryControllerImpl) Update(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service category updated successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service category updated successfully", result, response.ResponseMeta{}))
 }

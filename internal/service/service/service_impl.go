@@ -97,30 +97,32 @@ func (s *ServiceImpl) FindAll(ctx context.Context, filter dto.ServiceFilter) (*d
 		return nil, err
 	}
 	data := []dto.ServiceResponse{}
-	for _, discount := range services {
+	for _, service := range services {
 		data = append(data, dto.ServiceResponse{
-			ID: discount.ID,
+			ID: service.ID,
 			Category: dto.CategoryResponse{
-				ID:   discount.CategoryID,
-				Name: discount.Category.Name,
+				ID:   service.CategoryID,
+				Name: service.Category.Name,
 			},
-			Name:         discount.Name,
-			Price:        discount.Price,
-			MinQuantity:  discount.MinQuantity,
-			Unit:         discount.Unit,
-			DurationDays: discount.DurationDays,
-			IsActive:     discount.IsActive,
-			CreatedAt:    discount.CreatedAt,
-			UpdatedAt:    discount.UpdatedAt,
+			Name:         service.Name,
+			Price:        service.Price,
+			MinQuantity:  service.MinQuantity,
+			Unit:         service.Unit,
+			DurationDays: service.DurationDays,
+			IsActive:     service.IsActive,
+			CreatedAt:    service.CreatedAt,
+			UpdatedAt:    service.UpdatedAt,
 		})
 	}
 	totalPages := int(math.Ceil(float64(total) / float64(filter.Limit)))
 	return &dto.ServiceListResponse{
-		Data:       data,
-		Page:       filter.Page,
-		Limit:      filter.Limit,
-		Total:      total,
-		TotalPages: totalPages,
+		Data: data,
+		Pagination: dto.PaginationResponse{
+			Page:       filter.Page,
+			Limit:      filter.Limit,
+			Total:      total,
+			TotalPages: totalPages,
+		},
 	}, nil
 }
 

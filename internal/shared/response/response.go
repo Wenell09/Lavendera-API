@@ -1,10 +1,11 @@
 package response
 
 type ResponseSuccess struct {
-	Status  int         `json:"status"`
-	Message string      `json:"message"`
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data,omitempty"`
+	Status  int          `json:"status"`
+	Message string       `json:"message"`
+	Success bool         `json:"success"`
+	Data    interface{}  `json:"data,omitempty"`
+	Meta    ResponseMeta `json:"meta"`
 }
 
 type ResponseError struct {
@@ -14,12 +15,17 @@ type ResponseError struct {
 	Error   interface{} `json:"error,omitempty"`
 }
 
-func NewResponseSuccess(status int, message string, data interface{}) ResponseSuccess {
+type ResponseMeta struct {
+	Pagination interface{} `json:"pagination,omitempty"`
+}
+
+func NewResponseSuccess(status int, message string, data interface{}, meta ResponseMeta) ResponseSuccess {
 	return ResponseSuccess{
 		Status:  status,
 		Message: message,
 		Success: status >= 200 && status < 300,
 		Data:    data,
+		Meta:    meta,
 	}
 }
 

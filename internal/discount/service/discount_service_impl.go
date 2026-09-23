@@ -113,11 +113,13 @@ func (d *DiscountServiceImpl) FindAll(ctx context.Context, filter dto.DiscountFi
 	}
 	totalPages := int(math.Ceil(float64(total) / float64(filter.Limit)))
 	return &dto.DiscountListResponse{
-		Data:       data,
-		Page:       filter.Page,
-		Limit:      filter.Limit,
-		Total:      total,
-		TotalPages: totalPages,
+		Data: data,
+		Pagination: dto.PaginationResponse{
+			Page:       filter.Page,
+			Limit:      filter.Limit,
+			Total:      total,
+			TotalPages: totalPages,
+		},
 	}, nil
 }
 

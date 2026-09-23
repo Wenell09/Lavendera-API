@@ -16,10 +16,14 @@ type DiscountResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type PaginationResponse struct {
+	Page       int   `json:"page"`
+	Limit      int   `json:"limit"`
+	Total      int64 `json:"total"`
+	TotalPages int   `json:"total_pages"`
+}
+
 type DiscountListResponse struct {
-	Data       []DiscountResponse `json:"data"`
-	Page       int                `json:"page"`
-	Limit      int                `json:"limit"`
-	Total      int64              `json:"total"`
-	TotalPages int                `json:"total_pages"`
+	Data       []DiscountResponse
+	Pagination PaginationResponse
 }

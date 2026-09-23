@@ -41,7 +41,7 @@ func (s *ServiceControllerImpl) Create(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, response.NewResponseSuccess(http.StatusCreated, "service created successfully", result))
+	c.JSON(http.StatusCreated, response.NewResponseSuccess(http.StatusCreated, "service created successfully", result, response.ResponseMeta{}))
 }
 
 func (s *ServiceControllerImpl) Delete(c *gin.Context) {
@@ -54,7 +54,7 @@ func (s *ServiceControllerImpl) Delete(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service deleted successfully", nil))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service deleted successfully", nil, response.ResponseMeta{}))
 }
 
 func (s *ServiceControllerImpl) FindAll(c *gin.Context) {
@@ -82,7 +82,7 @@ func (s *ServiceControllerImpl) FindAll(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "services retrieved successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "services retrieved successfully", result.Data, response.ResponseMeta{Pagination: result.Pagination}))
 }
 
 func (s *ServiceControllerImpl) FindByID(c *gin.Context) {
@@ -96,7 +96,7 @@ func (s *ServiceControllerImpl) FindByID(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service retrieved successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service retrieved successfully", result, response.ResponseMeta{}))
 }
 
 func (s *ServiceControllerImpl) Update(c *gin.Context) {
@@ -123,5 +123,5 @@ func (s *ServiceControllerImpl) Update(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service updated successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "service updated successfully", result, response.ResponseMeta{}))
 }

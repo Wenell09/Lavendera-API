@@ -43,7 +43,7 @@ func (a *AuthControllerImpl) Login(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "Login successful", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "Login successful", result, response.ResponseMeta{}))
 }
 
 func (a *AuthControllerImpl) Register(c *gin.Context) {
@@ -67,5 +67,5 @@ func (a *AuthControllerImpl) Register(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, response.NewResponseSuccess(http.StatusCreated, "Registration successful", result))
+	c.JSON(http.StatusCreated, response.NewResponseSuccess(http.StatusCreated, "Registration successful", result, response.ResponseMeta{}))
 }

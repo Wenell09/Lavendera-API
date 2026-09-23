@@ -43,7 +43,7 @@ func (d *DiscountControllerImpl) Create(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, response.NewResponseSuccess(http.StatusCreated, "discount created successfully", result))
+	c.JSON(http.StatusCreated, response.NewResponseSuccess(http.StatusCreated, "discount created successfully", result, response.ResponseMeta{}))
 }
 
 // Delete implements [DiscountController].
@@ -57,7 +57,7 @@ func (d *DiscountControllerImpl) Delete(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "discount deleted successfully", nil))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "discount deleted successfully", nil, response.ResponseMeta{}))
 }
 
 // FindAll implements [DiscountController].
@@ -75,7 +75,7 @@ func (d *DiscountControllerImpl) FindAll(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "discounts retrieved successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "discounts retrieved successfully", result.Data, response.ResponseMeta{Pagination: result.Pagination}))
 }
 
 // FindByID implements [DiscountController].
@@ -90,7 +90,7 @@ func (d *DiscountControllerImpl) FindByID(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "discount retrieved successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "discount retrieved successfully", result, response.ResponseMeta{}))
 }
 
 // Update implements [DiscountController].
@@ -118,5 +118,5 @@ func (d *DiscountControllerImpl) Update(c *gin.Context) {
 		apperror.NewHandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "discount updated successfully", result))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "discount updated successfully", result, response.ResponseMeta{}))
 }
