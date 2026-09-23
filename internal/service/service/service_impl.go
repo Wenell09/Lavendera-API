@@ -30,17 +30,18 @@ func NewService(serviceRepository repository.ServiceRepository, logger *logrus.L
 
 // Create implements [Service].
 func (s *ServiceImpl) Create(ctx context.Context, req dto.CreateServiceRequest) (*dto.ServiceResponse, error) {
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("name", req.Name)
 	tenantID, exists := appcontext.TenantIDFromContext(ctx)
 	if !exists {
 		return nil, apperror.UnauthorizedError{Msg: "tenant_id not found"}
 	}
 	exists, err := s.ServiceRepository.ExistsByName(ctx, req.Name)
 	if err != nil {
-		utils.LogWithContext(s.Logger, ctx).WithError(err).Error("failed to check service category name existence")
+		logger.WithError(err).Error("failed to check service name existence")
 		return nil, err
 	}
 	if exists {
-		return nil, apperror.ConflictError{Msg: "service category name already exists"}
+		return nil, apperror.ConflictError{Msg: "service name already exists"}
 	}
 	service := &models.Service{
 		TenantID:     tenantID,
@@ -52,11 +53,10 @@ func (s *ServiceImpl) Create(ctx context.Context, req dto.CreateServiceRequest) 
 		DurationDays: req.DurationDays,
 		IsActive:     req.IsActive,
 	}
-	logger := utils.LogWithContext(s.Logger, ctx).WithFields(logrus.Fields{
-		"service_name": service.Name,
-		"category_id":  service.CategoryID,
-	})
 	if err := s.ServiceRepository.Create(ctx, service); err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, apperror.ConflictError{Msg: "service name already exists"}
+		}
 		logger.WithError(err).Error("failed to create service in database")
 		return nil, err
 	}
@@ -65,9 +65,22 @@ func (s *ServiceImpl) Create(ctx context.Context, req dto.CreateServiceRequest) 
 		logger.WithField("service_id", service.ID).WithError(err).Error("failed to fetch created service details")
 		return nil, err
 	}
-	logger.WithField("service_id", service.ID).Info("service created successfully")
-	response := mapServiceResponse(createdService)
-	return &response, nil
+	logger.WithField("service_id", service.ID).WithField("category_id", service.CategoryID).Info("service created successfully")
+	return &dto.ServiceResponse{
+		ID: createdService.ID,
+		Category: dto.CategoryResponse{
+			ID:   createdService.CategoryID,
+			Name: createdService.Category.Name,
+		},
+		Name:         createdService.Name,
+		Price:        createdService.Price,
+		MinQuantity:  createdService.MinQuantity,
+		Unit:         createdService.Unit,
+		DurationDays: createdService.DurationDays,
+		IsActive:     createdService.IsActive,
+		CreatedAt:    createdService.CreatedAt,
+		UpdatedAt:    createdService.UpdatedAt,
+	}, nil
 }
 
 // FindAll implements [Service].
@@ -84,8 +97,22 @@ func (s *ServiceImpl) FindAll(ctx context.Context, filter dto.ServiceFilter) (*d
 		return nil, err
 	}
 	data := []dto.ServiceResponse{}
-	for i := range services {
-		data = append(data, mapServiceResponse(&services[i]))
+	for _, discount := range services {
+		data = append(data, dto.ServiceResponse{
+			ID: discount.ID,
+			Category: dto.CategoryResponse{
+				ID:   discount.CategoryID,
+				Name: discount.Category.Name,
+			},
+			Name:         discount.Name,
+			Price:        discount.Price,
+			MinQuantity:  discount.MinQuantity,
+			Unit:         discount.Unit,
+			DurationDays: discount.DurationDays,
+			IsActive:     discount.IsActive,
+			CreatedAt:    discount.CreatedAt,
+			UpdatedAt:    discount.UpdatedAt,
+		})
 	}
 	totalPages := int(math.Ceil(float64(total) / float64(filter.Limit)))
 	return &dto.ServiceListResponse{
@@ -98,18 +125,31 @@ func (s *ServiceImpl) FindAll(ctx context.Context, filter dto.ServiceFilter) (*d
 }
 
 // FindByID implements [Service].
-func (s *ServiceImpl) FindByID(ctx context.Context, id uuid.UUID,
-) (*dto.ServiceResponse, error) {
+func (s *ServiceImpl) FindByID(ctx context.Context, id uuid.UUID) (*dto.ServiceResponse, error) {
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("service_id", id)
 	service, err := s.ServiceRepository.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.NotFoundError{Msg: "service not found"}
 		}
-		utils.LogWithContext(s.Logger, ctx).WithField("service_id", id).WithError(err).Error("failed to find service by id")
+		logger.WithError(err).Error("failed to find service by id")
 		return nil, err
 	}
-	response := mapServiceResponse(service)
-	return &response, nil
+	return &dto.ServiceResponse{
+		ID: service.ID,
+		Category: dto.CategoryResponse{
+			ID:   service.CategoryID,
+			Name: service.Category.Name,
+		},
+		Name:         service.Name,
+		Price:        service.Price,
+		MinQuantity:  service.MinQuantity,
+		Unit:         service.Unit,
+		DurationDays: service.DurationDays,
+		IsActive:     service.IsActive,
+		CreatedAt:    service.CreatedAt,
+		UpdatedAt:    service.UpdatedAt,
+	}, nil
 }
 
 // Update implements [Service].
@@ -120,7 +160,7 @@ func (s *ServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSe
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.NotFoundError{Msg: "service not found"}
 		}
-		logger.WithError(err).Error("failed to find service for update")
+		logger.WithError(err).Error("failed to find service by id")
 		return nil, err
 	}
 	if req.CategoryID != nil {
@@ -129,7 +169,7 @@ func (s *ServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSe
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, apperror.NotFoundError{Msg: "service category not found"}
 			}
-			logger.WithError(err).Error("failed to find service category")
+			logger.WithError(err).Error("failed to find service category by id")
 			return nil, err
 		}
 	}
@@ -167,8 +207,21 @@ func (s *ServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSe
 		updateData["is_active"] = *req.IsActive
 	}
 	if len(updateData) == 0 {
-		response := mapServiceResponse(service)
-		return &response, nil
+		return &dto.ServiceResponse{
+			ID: service.ID,
+			Category: dto.CategoryResponse{
+				ID:   service.CategoryID,
+				Name: service.Category.Name,
+			},
+			Name:         service.Name,
+			Price:        service.Price,
+			MinQuantity:  service.MinQuantity,
+			Unit:         service.Unit,
+			DurationDays: service.DurationDays,
+			IsActive:     service.IsActive,
+			CreatedAt:    service.CreatedAt,
+			UpdatedAt:    service.UpdatedAt,
+		}, nil
 	}
 	if err := s.ServiceRepository.Update(ctx, id, updateData); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
@@ -183,8 +236,21 @@ func (s *ServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSe
 		return nil, err
 	}
 	logger.Info("service updated successfully")
-	response := mapServiceResponse(updatedService)
-	return &response, nil
+	return &dto.ServiceResponse{
+		ID: updatedService.ID,
+		Category: dto.CategoryResponse{
+			ID:   updatedService.CategoryID,
+			Name: updatedService.Category.Name,
+		},
+		Name:         updatedService.Name,
+		Price:        updatedService.Price,
+		MinQuantity:  updatedService.MinQuantity,
+		Unit:         updatedService.Unit,
+		DurationDays: updatedService.DurationDays,
+		IsActive:     updatedService.IsActive,
+		CreatedAt:    updatedService.CreatedAt,
+		UpdatedAt:    updatedService.UpdatedAt,
+	}, nil
 }
 
 // Delete implements [Service].
@@ -204,22 +270,4 @@ func (s *ServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 	logger.Info("service deleted successfully")
 	return nil
-}
-
-func mapServiceResponse(service *models.Service) dto.ServiceResponse {
-	return dto.ServiceResponse{
-		ID: service.ID,
-		Category: dto.CategoryResponse{
-			ID:   service.CategoryID,
-			Name: service.Category.Name,
-		},
-		Name:         service.Name,
-		Price:        service.Price,
-		MinQuantity:  service.MinQuantity,
-		Unit:         service.Unit,
-		DurationDays: service.DurationDays,
-		IsActive:     service.IsActive,
-		CreatedAt:    service.CreatedAt,
-		UpdatedAt:    service.UpdatedAt,
-	}
 }

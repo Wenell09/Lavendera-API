@@ -69,14 +69,8 @@ func (s *ServiceControllerImpl) FindAll(c *gin.Context) {
 		}
 		categoryID = &id
 	}
-	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
-	if err != nil || page < 1 {
-		page = 1
-	}
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	if err != nil || limit < 1 {
-		limit = 10
-	}
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	filter := dto.ServiceFilter{
 		Search:     search,
 		CategoryID: categoryID,
