@@ -42,6 +42,9 @@ func (d *DiscountServiceImpl) Create(ctx context.Context, req dto.CreateDiscount
 	if exists {
 		return nil, apperror.ConflictError{Msg: "discount name already exists"}
 	}
+	if req.Type == "percentage" && req.Value > 100 {
+		req.Value = 100
+	}
 	discount := &models.Discount{
 		TenantID: tenantID,
 		Name:     req.Name,
@@ -171,11 +174,20 @@ func (d *DiscountServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.
 		}
 		updateData["name"] = newName
 	}
+	effectiveType := discount.Type
 	if req.Type != nil {
-		updateData["type"] = *req.Type
+		effectiveType = *req.Type
+		updateData["type"] = effectiveType
 	}
+	effectiveValue := discount.Value
 	if req.Value != nil {
-		updateData["value"] = *req.Value
+		effectiveValue = *req.Value
+	}
+	if effectiveType == "percentage" && effectiveValue > 100 {
+		effectiveValue = 100
+	}
+	if req.Value != nil || effectiveValue != discount.Value {
+		updateData["value"] = effectiveValue
 	}
 	if req.IsActive != nil {
 		updateData["is_active"] = *req.IsActive
