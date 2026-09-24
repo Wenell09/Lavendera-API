@@ -40,12 +40,13 @@ func NewRouter(
 	authRoutes.RegisterRoutes(publicGroup, authController)
 	// Route protected
 	protectedGroup := api.Group("")
-	protectedGroup.Use(
-		middleware.JWTMiddleware(jwtConfig),
-	)
+	protectedGroup.Use(middleware.JWTMiddleware(jwtConfig))
 	// Registrasi fitur yang membutuhkan autentikasi
 	serviceCategoryRoutes.RegisterRoutes(protectedGroup, serviceCategoryController)
 	serviceRoutes.RegisterRoutes(protectedGroup, serviceController)
 	discountRoutes.RegisterRoutes(protectedGroup, discountController)
+	// Route khusus admin
+	adminGroup := api.Group("")
+	adminGroup.Use(middleware.RequireRole("admin"))
 	return r
 }

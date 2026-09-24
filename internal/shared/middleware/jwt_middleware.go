@@ -86,6 +86,17 @@ func JWTMiddleware(jwtConfig config.JWTConfig) gin.HandlerFunc {
 			)
 			return
 		}
+		if claims.Role == "" {
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				response.NewResponseError(
+					http.StatusUnauthorized,
+					"Unauthorized access",
+					"role tidak ditemukan dalam token",
+				),
+			)
+			return
+		}
 		// Simpan identity ke request context.
 		rawUserID := claims.UserID
 		userID, err := uuid.Parse(rawUserID)
@@ -116,6 +127,7 @@ func JWTMiddleware(jwtConfig config.JWTConfig) gin.HandlerFunc {
 		ctx := c.Request.Context()
 		ctx = appcontext.WithUserID(ctx, userID)
 		ctx = appcontext.WithTenantID(ctx, tenantID)
+		ctx = appcontext.WithRole(ctx, claims.Role)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}

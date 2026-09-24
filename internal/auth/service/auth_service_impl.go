@@ -46,7 +46,7 @@ func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (*dto
 		a.Logger.WithField("email", email).Warn("login failed: invalid credentials")
 		return nil, apperror.UnauthorizedError{Msg: "invalid email or password"}
 	}
-	token, err := utils.GenerateToken(user.ID.String(), user.TenantID.String(), a.JWTConfig)
+	token, err := utils.GenerateToken(user.ID.String(), user.TenantID.String(), user.Role, a.JWTConfig)
 	if err != nil {
 		a.Logger.WithError(err).Error("failed to generate JWT")
 		return nil, err
