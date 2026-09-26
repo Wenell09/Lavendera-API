@@ -44,7 +44,7 @@ func (o *OutletServiceImpl) Create(ctx context.Context, req dto.CreateOutletRequ
 	outlet := &models.Outlet{
 		TenantID:             tenantID,
 		Name:                 req.Name,
-		Slug:                 req.Slug,
+		Slug:                 utils.GenerateSlug(req.Name),
 		Phone:                req.Phone,
 		Address:              req.Address,
 		IsPublicOrderEnabled: req.IsPublicOrderEnabled,

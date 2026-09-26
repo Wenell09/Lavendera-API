@@ -2,7 +2,6 @@ package dto
 
 type CreateOutletRequest struct {
 	Name                 string `json:"name" validate:"required,min=5,max=255"`
-	Slug                 string `json:"slug" validate:"required,min=5,max=255"`
 	Phone                string `json:"phone" validate:"required,id_phone"`
 	Address              string `json:"address" validate:"required"`
 	IsPublicOrderEnabled bool   `json:"is_public_order_enabled"`
