@@ -7,6 +7,8 @@ import (
 	authRoutes "github.com/Wenell09/lavendera-api/internal/auth/routes"
 	discountController "github.com/Wenell09/lavendera-api/internal/discount/controller"
 	discountRoutes "github.com/Wenell09/lavendera-api/internal/discount/routes"
+	OutletController "github.com/Wenell09/lavendera-api/internal/outlet/controller"
+	OutletRoutes "github.com/Wenell09/lavendera-api/internal/outlet/routes"
 	serviceController "github.com/Wenell09/lavendera-api/internal/service/controller"
 	serviceRoutes "github.com/Wenell09/lavendera-api/internal/service/routes"
 	serviceCategoryController "github.com/Wenell09/lavendera-api/internal/service_category/controller"
@@ -22,6 +24,7 @@ func NewRouter(
 	serviceCategoryController serviceCategoryController.ServiceCategoryController,
 	serviceController serviceController.ServiceController,
 	discountController discountController.DiscountController,
+	outletController OutletController.OutletController,
 	jwtConfig config.JWTConfig,
 	logger *logrus.Logger,
 ) *gin.Engine {
@@ -42,11 +45,13 @@ func NewRouter(
 	protectedGroup := api.Group("")
 	protectedGroup.Use(middleware.JWTMiddleware(jwtConfig))
 	// Registrasi fitur yang membutuhkan autentikasi
-	serviceCategoryRoutes.RegisterRoutes(protectedGroup, serviceCategoryController)
-	serviceRoutes.RegisterRoutes(protectedGroup, serviceController)
-	discountRoutes.RegisterRoutes(protectedGroup, discountController)
 	// Route khusus admin
-	adminGroup := api.Group("")
-	adminGroup.Use(middleware.RequireRole("admin"))
+	adminGroup := protectedGroup.Group("")
+	adminGroup.Use(middleware.RequireRole("ADMIN"))
+	OutletRoutes.RegisterRoutes(adminGroup, outletController)
+	serviceCategoryRoutes.RegisterRoutes(adminGroup, serviceCategoryController)
+	serviceRoutes.RegisterRoutes(adminGroup, serviceController)
+	discountRoutes.RegisterRoutes(adminGroup, discountController)
+	// route khusus staff
 	return r
 }

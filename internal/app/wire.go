@@ -5,6 +5,7 @@ package app
 import (
 	"github.com/Wenell09/lavendera-api/internal/auth"
 	"github.com/Wenell09/lavendera-api/internal/discount"
+	"github.com/Wenell09/lavendera-api/internal/outlet"
 	"github.com/Wenell09/lavendera-api/internal/service"
 	"github.com/Wenell09/lavendera-api/internal/service_category"
 	"github.com/Wenell09/lavendera-api/internal/shared/applogger"
@@ -18,6 +19,7 @@ func InitializeApp() (*App, error) {
 		service_category.WireSet,
 		service.WireSet,
 		discount.WireSet,
+		outlet.WireSet,
 		appvalidator.NewValidator,
 		applogger.NewLogger,
 		NewDB,

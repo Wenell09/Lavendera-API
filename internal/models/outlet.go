@@ -11,15 +11,10 @@ type Outlet struct {
 	TenantID             uuid.UUID `gorm:"type:uuid;not null;index"`
 	Name                 string
 	Slug                 string
-	Phone                *string
-	Address              *string
+	Phone                string
+	Address              string
 	IsPublicOrderEnabled bool
 	IsActive             bool
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
-	Tenant               Tenant
-	Users                []User
-	Orders               []Order
-	Payments             []Payment
-	PaymentMethods       []OutletPaymentMethod
 }
