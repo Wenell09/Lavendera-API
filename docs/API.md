@@ -34,6 +34,11 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 | 21 | `GET` | `/api/v1/discounts/:id` | Bearer JWT | `ADMIN` | Mengambil Detail Diskon Berdasarkan ID |
 | 22 | `PATCH` | `/api/v1/discounts/:id` | Bearer JWT | `ADMIN` | Mengubah Data Diskon Secara Parsial |
 | 23 | `DELETE` | `/api/v1/discounts/:id` | Bearer JWT | `ADMIN` | Menghapus Diskon Berdasarkan ID |
+| 24 | `POST` | `/api/v1/users` | Bearer JWT | `ADMIN` | Membuat User / Staff Baru |
+| 25 | `GET` | `/api/v1/users` | Bearer JWT | `ADMIN` | Mengambil Daftar User (Paginated + Search + Filter Role) |
+| 26 | `GET` | `/api/v1/users/:id` | Bearer JWT | `ADMIN` | Mengambil Detail User Berdasarkan ID |
+| 27 | `PATCH` | `/api/v1/users/:id` | Bearer JWT | `ADMIN` | Mengubah Data User Secara Parsial |
+| 28 | `DELETE` | `/api/v1/users/:id` | Bearer JWT | `ADMIN` | Menghapus User Berdasarkan ID |
 
 ---
 
@@ -630,3 +635,135 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
   }
   ```
 - **Errors**: `400 Bad Request`, `404 Not Found`.
+
+---
+
+## 7. User Module
+
+### POST /api/v1/users
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Request Body**:
+  ```json
+  {
+    "name": "Sari Dewi",
+    "email": "sari@laundrysejahtera.com",
+    "password": "password123",
+    "role": "STAFF",
+    "is_active": true
+  }
+  ```
+- **Validation Rules**:
+  - `name`: required, min 2, max 150
+  - `email`: required, valid email, max 255
+  - `password`: required, min 8, max 72
+  - `role`: required, one of `ADMIN` atau `STAFF`
+  - `is_active`: boolean (opsional, default `true`)
+- **Response** (`201 Created`):
+  ```json
+  {
+    "status": 201,
+    "message": "user created successfully",
+    "success": true,
+    "data": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "tenant_id": "1e5db5d2-0056-4c4f-9e79-5ee45b98df99",
+      "name": "Sari Dewi",
+      "email": "sari@laundrysejahtera.com",
+      "role": "STAFF",
+      "is_active": true,
+      "created_at": "2026-09-28T10:00:00Z",
+      "updated_at": "2026-09-28T10:00:00Z"
+    },
+    "meta": {}
+  }
+  ```
+- **Errors**: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `409 Conflict` (`"email already registered"`).
+
+---
+
+### GET /api/v1/users
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Query Parameters**:
+  - `search` (string, opsional): prefix search nama user (`name ILIKE search + "%"`).
+  - `role` (string, opsional): filter berdasarkan role (`ADMIN` atau `STAFF`).
+  - `page` (int, opsional, default: `1`).
+  - `limit` (int, opsional, default: `10`, max: `100`).
+- **Pagination**: Yes (`meta.pagination`)
+- **Response** (`200 OK`):
+  ```json
+  {
+    "status": 200,
+    "message": "users retrieved successfully",
+    "success": true,
+    "data": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "tenant_id": "1e5db5d2-0056-4c4f-9e79-5ee45b98df99",
+        "name": "Sari Dewi",
+        "email": "sari@laundrysejahtera.com",
+        "role": "STAFF",
+        "is_active": true,
+        "created_at": "2026-09-28T10:00:00Z",
+        "updated_at": "2026-09-28T10:00:00Z"
+      }
+    ],
+    "meta": {
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 1,
+        "total_pages": 1
+      }
+    }
+  }
+  ```
+
+---
+
+### GET /api/v1/users/:id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (UUID)
+- **Response** (`200 OK`): Single `UserResponse` object.
+- **Errors**: `400 Bad Request` (`"invalid user id"`), `404 Not Found` (`"user not found"`).
+
+---
+
+### PATCH /api/v1/users/:id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (UUID)
+- **Request Body** (Semua field opsional / partial update):
+  ```json
+  {
+    "name": "Sari Dewi Utami",
+    "email": "sari.utami@laundrysejahtera.com",
+    "password": "newpassword123",
+    "role": "ADMIN",
+    "is_active": false
+  }
+  ```
+- **Validation**: Jika `email` berubah, dicek keunikannya per tenant. Password di-hash ulang jika diubah.
+- **Response** (`200 OK`): Single `UserResponse` object yang sudah diperbarui.
+- **Errors**: `400 Bad Request`, `404 Not Found`, `409 Conflict` (`"email already registered"`).
+
+---
+
+### DELETE /api/v1/users/:id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (UUID)
+- **Special Business Rule**: Admin tidak dapat menghapus akun miliknya sendiri (`"cannot delete your own account"`).
+- **Response** (`200 OK`):
+  ```json
+  {
+    "status": 200,
+    "message": "user deleted successfully",
+    "success": true,
+    "data": null,
+    "meta": {}
+  }
+  ```
+- **Errors**: `400 Bad Request`, `404 Not Found`, `409 Conflict` (hapus akun sendiri).

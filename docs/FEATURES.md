@@ -20,7 +20,7 @@ Status diklasifikasikan menjadi:
 | **Service Category** | **DONE** | Ya | Ya | Ya | Ya | CRUD lengkap untuk kategori layanan (Kiloan, Satuan). |
 | **Service (Layanan Laundry)** | **DONE** | Ya | Ya | Ya | Ya | CRUD lengkap, pagination, search, filter `category_id`. |
 | **Discounts** | **DONE** | Ya | Ya | Ya | Ya | CRUD lengkap, pagination, search, auto cap 100%. |
-| **User / Staff Management** | **PARTIAL** | Tidak | Hanya Auth | Hanya Auth | Hanya Auth | Model & migrasi tabel `users` ada; pembuatan admin saat registrasi ada; endpoint manajemen staff belum ada. |
+| **User / Staff Management** | **DONE** | Ya | Ya | Ya | Ya | CRUD lengkap, pagination, search, filter role, proteksi hapus akun sendiri. |
 | **Outlet User Assignment** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `OutletUser` dan tabel migrasi `outlet_users` ada, namun belum ada layer aplikasi. |
 | **Outlet Payment Methods** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `OutletPaymentMethod` dan tabel migrasi ada, belum ada layer aplikasi. |
 | **Customer Management** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `Customer` dan tabel migrasi ada, belum ada layer aplikasi. |
@@ -135,6 +135,28 @@ Status diklasifikasikan menjadi:
 - **Validation**: `type`: `oneof=percentage fixed`, `value`: `gt=0`.
 - **Special Business Rule**:
   - Pada `Create` dan `Update`, jika `type == "percentage"` dan `value > 100`, value dipaksa bernilai maksimal `100`.
+
+---
+
+### 2.6. User / Staff Management
+- **Purpose**: Pengelolaan staf dan admin tambahan per tenant.
+- **Status**: **DONE**
+- **Model**: [models.User](file:///home/wenell/projects/lavendera-API/internal/models/user.go)
+- **Repository**: [UserRepository](file:///home/wenell/projects/lavendera-API/internal/user/repository/user_repository.go) / [UserRepositoryImpl](file:///home/wenell/projects/lavendera-API/internal/user/repository/user_repository_impl.go)
+- **Service**: [UserService](file:///home/wenell/projects/lavendera-API/internal/user/service/user_service.go) / [UserServiceImpl](file:///home/wenell/projects/lavendera-API/internal/user/service/user_service_impl.go)
+- **Controller**: [UserController](file:///home/wenell/projects/lavendera-API/internal/user/controller/user_controller.go) / [UserControllerImpl](file:///home/wenell/projects/lavendera-API/internal/user/controller/user_controller_impl.go)
+- **Routes**: [user_routes.go](file:///home/wenell/projects/lavendera-API/internal/user/routes/user_routes.go) (`POST`, `GET`, `GET /:id`, `PATCH /:id`, `DELETE /:id`)
+- **Middleware**: `JWTMiddleware` + `RequireRole("ADMIN")`
+- **Request DTO**: `CreateUserRequest`, `UpdateUserRequest`
+- **Response DTO**: `UserResponse`, `UserListResponse`
+- **Validation**:
+  - `name`: min 2, max 150
+  - `email`: valid email
+  - `password`: min 8, max 72
+  - `role`: oneof `ADMIN` `STAFF`
+- **Special Business Rule**:
+  - Pengecekan unik `email` per tenant saat create dan update.
+  - Saat `DELETE`, mencegah akun yang sedang login (ID sama dengan di token JWT) menghapus dirinya sendiri (`apperror.ConflictError`).
 
 ---
 
