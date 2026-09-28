@@ -25,6 +25,9 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/applogger"
 	"github.com/Wenell09/lavendera-api/internal/shared/appvalidator"
 	"github.com/Wenell09/lavendera-api/internal/shared/config"
+	controller6 "github.com/Wenell09/lavendera-api/internal/user/controller"
+	repository6 "github.com/Wenell09/lavendera-api/internal/user/repository"
+	service6 "github.com/Wenell09/lavendera-api/internal/user/service"
 )
 
 // Injectors from wire.go:
@@ -49,7 +52,10 @@ func InitializeApp() (*App, error) {
 	outletRepository := repository5.NewOutletRepository(db)
 	outletService := service5.NewOutletService(outletRepository, logger)
 	outletController := controller5.NewOutletController(outletService, validate)
-	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, outletController, jwtConfig, logger)
+	userRepository := repository6.NewUserRepository(db)
+	userService := service6.NewUserService(userRepository, logger)
+	userController := controller6.NewUserController(userService, validate)
+	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, outletController, userController, jwtConfig, logger)
 	app := NewApp(engine, db, logger)
 	return app, nil
 }

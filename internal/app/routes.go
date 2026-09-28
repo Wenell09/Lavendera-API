@@ -15,6 +15,8 @@ import (
 	serviceCategoryRoutes "github.com/Wenell09/lavendera-api/internal/service_category/routes"
 	"github.com/Wenell09/lavendera-api/internal/shared/config"
 	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
+	userController "github.com/Wenell09/lavendera-api/internal/user/controller"
+	userRoutes "github.com/Wenell09/lavendera-api/internal/user/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -25,6 +27,7 @@ func NewRouter(
 	serviceController serviceController.ServiceController,
 	discountController discountController.DiscountController,
 	outletController OutletController.OutletController,
+	userController userController.UserController,
 	jwtConfig config.JWTConfig,
 	logger *logrus.Logger,
 ) *gin.Engine {
@@ -52,6 +55,7 @@ func NewRouter(
 	serviceCategoryRoutes.RegisterRoutes(adminGroup, serviceCategoryController)
 	serviceRoutes.RegisterRoutes(adminGroup, serviceController)
 	discountRoutes.RegisterRoutes(adminGroup, discountController)
+	userRoutes.RegisterRoutes(adminGroup, userController)
 	// route khusus staff
 	return r
 }
