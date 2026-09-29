@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"math"
 
 	"github.com/Wenell09/lavendera-api/internal/models"
 	outletRepo "github.com/Wenell09/lavendera-api/internal/outlet/repository"
@@ -95,12 +96,10 @@ func (s *OutletUserServiceImpl) Assign(ctx context.Context, req dto.CreateOutlet
 		UserID:    outletUser.UserID,
 		CreatedAt: outletUser.CreatedAt,
 		Outlet: &dto.OutletUserOutletResponse{
-			ID:   outlet.ID,
 			Name: outlet.Name,
 			Slug: outlet.Slug,
 		},
 		User: &dto.OutletUserUserResponse{
-			ID:       user.ID,
 			Name:     user.Name,
 			Email:    user.Email,
 			Role:     user.Role,
@@ -145,12 +144,14 @@ func (s *OutletUserServiceImpl) Unassign(ctx context.Context, outletID, userID u
 	return nil
 }
 
-func (s *OutletUserServiceImpl) FindByOutletID(ctx context.Context, outletID uuid.UUID) ([]dto.OutletUserResponse, error) {
+func (s *OutletUserServiceImpl) FindByOutletID(ctx context.Context, outletID uuid.UUID, filter dto.OutletUserFilter) (*dto.OutletUserListResponse, error) {
 	logger := utils.LogWithContext(s.Logger, ctx).WithField("outlet_id", outletID)
 
 	if _, exists := appcontext.TenantIDFromContext(ctx); !exists {
 		return nil, apperror.UnauthorizedError{Msg: "tenant_id not found"}
 	}
+
+	filter.SetDefault()
 
 	outlet, err := s.OutletRepo.FindByID(ctx, outletID)
 	if err != nil {
@@ -161,25 +162,23 @@ func (s *OutletUserServiceImpl) FindByOutletID(ctx context.Context, outletID uui
 		return nil, err
 	}
 
-	outletUsers, err := s.Repo.FindByOutletID(ctx, outletID)
+	outletUsers, total, err := s.Repo.FindByOutletID(ctx, outletID, filter)
 	if err != nil {
 		logger.WithError(err).Error("failed to find outlet users")
 		return nil, err
 	}
 
-	var responses []dto.OutletUserResponse
+	responses := []dto.OutletUserResponse{}
 	for _, ou := range outletUsers {
 		responses = append(responses, dto.OutletUserResponse{
 			OutletID:  ou.OutletID,
 			UserID:    ou.UserID,
 			CreatedAt: ou.CreatedAt,
 			Outlet: &dto.OutletUserOutletResponse{
-				ID:   outlet.ID,
 				Name: outlet.Name,
 				Slug: outlet.Slug,
 			},
 			User: &dto.OutletUserUserResponse{
-				ID:       ou.User.ID,
 				Name:     ou.User.Name,
 				Email:    ou.User.Email,
 				Role:     ou.User.Role,
@@ -188,5 +187,15 @@ func (s *OutletUserServiceImpl) FindByOutletID(ctx context.Context, outletID uui
 		})
 	}
 
-	return responses, nil
+	totalPages := int(math.Ceil(float64(total) / float64(filter.Limit)))
+
+	return &dto.OutletUserListResponse{
+		Data: responses,
+		Pagination: dto.PaginationResponse{
+			Page:       filter.Page,
+			Limit:      filter.Limit,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	}, nil
 }

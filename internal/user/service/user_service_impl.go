@@ -63,7 +63,7 @@ func (u *UserServiceImpl) Create(ctx context.Context, req dto.CreateUserRequest)
 		Name:     name,
 		Email:    email,
 		Password: string(hashedPassword),
-		Role:     req.Role,
+		Role:     "STAFF",
 		IsActive: isActive,
 	}
 
@@ -219,10 +219,6 @@ func (u *UserServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.Upda
 			return nil, err
 		}
 		updateData["password"] = string(hashedPassword)
-	}
-
-	if req.Role != nil {
-		updateData["role"] = *req.Role
 	}
 
 	if req.IsActive != nil {

@@ -67,13 +67,12 @@ func (u *UserControllerImpl) Delete(c *gin.Context) {
 // FindAll implements [UserController].
 func (u *UserControllerImpl) FindAll(c *gin.Context) {
 	search := c.Query("search")
-	role := c.Query("role")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
 	filter := dto.UserFilter{
 		Search: search,
-		Role:   role,
+		Role:   "STAFF",
 		Page:   page,
 		Limit:  limit,
 	}

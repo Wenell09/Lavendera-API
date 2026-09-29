@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Wenell09/lavendera-api/internal/outlet_user/dto"
 	"github.com/Wenell09/lavendera-api/internal/outlet_user/service"
@@ -74,11 +75,24 @@ func (u *OutletUserControllerImpl) FindByOutletID(c *gin.Context) {
 		return
 	}
 
-	result, err := u.Service.FindByOutletID(c.Request.Context(), outletID)
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	search := c.Query("search")
+
+	filter := dto.OutletUserFilter{
+		Page:   page,
+		Limit:  limit,
+		Search: search,
+	}
+
+	result, err := u.Service.FindByOutletID(c.Request.Context(), outletID, filter)
 	if err != nil {
 		apperror.NewHandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "outlet users retrieved successfully", result, response.ResponseMeta{}))
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "outlet users retrieved successfully", result.Data, response.ResponseMeta{
+		Pagination: result.Pagination,
+	}))
 }
+

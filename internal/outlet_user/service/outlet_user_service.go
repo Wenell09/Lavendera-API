@@ -10,5 +10,5 @@ import (
 type OutletUserService interface {
 	Assign(ctx context.Context, req dto.CreateOutletUserRequest) (*dto.OutletUserResponse, error)
 	Unassign(ctx context.Context, outletID, userID uuid.UUID) error
-	FindByOutletID(ctx context.Context, outletID uuid.UUID) ([]dto.OutletUserResponse, error)
+	FindByOutletID(ctx context.Context, outletID uuid.UUID, filter dto.OutletUserFilter) (*dto.OutletUserListResponse, error)
 }

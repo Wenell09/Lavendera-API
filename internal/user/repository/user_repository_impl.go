@@ -52,14 +52,11 @@ func (u *UserRepositoryImpl) FindAll(ctx context.Context, filter dto.UserFilter)
 		searchPattern := filter.Search + "%"
 		query = query.Where("name ILIKE ? OR email ILIKE ?", searchPattern, searchPattern)
 	}
-	if filter.Role != "" {
-		query = query.Where("role = ?", filter.Role)
-	}
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 	offset := (filter.Page - 1) * filter.Limit
-	if err := query.Order("created_at DESC").Offset(offset).Limit(filter.Limit).Find(&users).Error; err != nil {
+	if err := query.Where("role = ?", filter.Role).Order("created_at DESC").Offset(offset).Limit(filter.Limit).Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
 	return users, total, nil
