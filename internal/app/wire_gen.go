@@ -10,15 +10,18 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/auth/controller"
 	"github.com/Wenell09/lavendera-api/internal/auth/repository"
 	"github.com/Wenell09/lavendera-api/internal/auth/service"
+	controller5 "github.com/Wenell09/lavendera-api/internal/customer/controller"
+	repository5 "github.com/Wenell09/lavendera-api/internal/customer/repository"
+	service5 "github.com/Wenell09/lavendera-api/internal/customer/service"
 	controller4 "github.com/Wenell09/lavendera-api/internal/discount/controller"
 	repository4 "github.com/Wenell09/lavendera-api/internal/discount/repository"
 	service4 "github.com/Wenell09/lavendera-api/internal/discount/service"
-	controller5 "github.com/Wenell09/lavendera-api/internal/outlet/controller"
-	repository5 "github.com/Wenell09/lavendera-api/internal/outlet/repository"
-	service5 "github.com/Wenell09/lavendera-api/internal/outlet/service"
-	controller7 "github.com/Wenell09/lavendera-api/internal/outlet_user/controller"
-	repository7 "github.com/Wenell09/lavendera-api/internal/outlet_user/repository"
-	service7 "github.com/Wenell09/lavendera-api/internal/outlet_user/service"
+	controller6 "github.com/Wenell09/lavendera-api/internal/outlet/controller"
+	repository6 "github.com/Wenell09/lavendera-api/internal/outlet/repository"
+	service6 "github.com/Wenell09/lavendera-api/internal/outlet/service"
+	controller8 "github.com/Wenell09/lavendera-api/internal/outlet_user/controller"
+	repository8 "github.com/Wenell09/lavendera-api/internal/outlet_user/repository"
+	service8 "github.com/Wenell09/lavendera-api/internal/outlet_user/service"
 	controller3 "github.com/Wenell09/lavendera-api/internal/service/controller"
 	repository3 "github.com/Wenell09/lavendera-api/internal/service/repository"
 	service3 "github.com/Wenell09/lavendera-api/internal/service/service"
@@ -28,9 +31,9 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/applogger"
 	"github.com/Wenell09/lavendera-api/internal/shared/appvalidator"
 	"github.com/Wenell09/lavendera-api/internal/shared/config"
-	controller6 "github.com/Wenell09/lavendera-api/internal/user/controller"
-	repository6 "github.com/Wenell09/lavendera-api/internal/user/repository"
-	service6 "github.com/Wenell09/lavendera-api/internal/user/service"
+	controller7 "github.com/Wenell09/lavendera-api/internal/user/controller"
+	repository7 "github.com/Wenell09/lavendera-api/internal/user/repository"
+	service7 "github.com/Wenell09/lavendera-api/internal/user/service"
 )
 
 // Injectors from wire.go:
@@ -52,16 +55,19 @@ func InitializeApp() (*App, error) {
 	discountRepository := repository4.NewDiscountRepository(db)
 	discountService := service4.NewDiscountService(discountRepository, logger)
 	discountController := controller4.NewDiscountController(discountService, validate)
-	outletRepository := repository5.NewOutletRepository(db)
-	outletService := service5.NewOutletService(outletRepository, logger)
-	outletController := controller5.NewOutletController(outletService, validate)
-	userRepository := repository6.NewUserRepository(db)
-	userService := service6.NewUserService(userRepository, logger)
-	userController := controller6.NewUserController(userService, validate)
-	outletUserRepository := repository7.NewOutletUserRepository(db)
-	outletUserService := service7.NewOutletUserService(outletUserRepository, outletRepository, userRepository, logger)
-	outletUserController := controller7.NewOutletUserController(outletUserService, validate)
-	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, outletController, userController, outletUserController, jwtConfig, logger)
+	customerRepository := repository5.NewCustomerRepository(db)
+	customerService := service5.NewCustomerService(customerRepository, logger)
+	customerController := controller5.NewCustomerController(customerService, validate)
+	outletRepository := repository6.NewOutletRepository(db)
+	outletService := service6.NewOutletService(outletRepository, logger)
+	outletController := controller6.NewOutletController(outletService, validate)
+	userRepository := repository7.NewUserRepository(db)
+	userService := service7.NewUserService(userRepository, logger)
+	userController := controller7.NewUserController(userService, validate)
+	outletUserRepository := repository8.NewOutletUserRepository(db)
+	outletUserService := service8.NewOutletUserService(outletUserRepository, outletRepository, userRepository, logger)
+	outletUserController := controller8.NewOutletUserController(outletUserService, validate)
+	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, customerController, outletController, userController, outletUserController, jwtConfig, logger)
 	app := NewApp(engine, db, logger)
 	return app, nil
 }

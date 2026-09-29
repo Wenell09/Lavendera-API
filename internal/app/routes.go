@@ -5,6 +5,8 @@ import (
 
 	authController "github.com/Wenell09/lavendera-api/internal/auth/controller"
 	authRoutes "github.com/Wenell09/lavendera-api/internal/auth/routes"
+	customerController "github.com/Wenell09/lavendera-api/internal/customer/controller"
+	customerRoutes "github.com/Wenell09/lavendera-api/internal/customer/routes"
 	discountController "github.com/Wenell09/lavendera-api/internal/discount/controller"
 	discountRoutes "github.com/Wenell09/lavendera-api/internal/discount/routes"
 	OutletController "github.com/Wenell09/lavendera-api/internal/outlet/controller"
@@ -28,6 +30,7 @@ func NewRouter(
 	serviceCategoryController serviceCategoryController.ServiceCategoryController,
 	serviceController serviceController.ServiceController,
 	discountController discountController.DiscountController,
+	customerController customerController.CustomerController,
 	outletController OutletController.OutletController,
 	userController userController.UserController,
 	outletUserController outletUserController.OutletUserController,
@@ -58,6 +61,7 @@ func NewRouter(
 	serviceCategoryRoutes.RegisterRoutes(adminGroup, serviceCategoryController)
 	serviceRoutes.RegisterRoutes(adminGroup, serviceController)
 	discountRoutes.RegisterRoutes(adminGroup, discountController)
+	customerRoutes.RegisterRoutes(adminGroup, customerController)
 	userRoutes.RegisterRoutes(adminGroup, userController)
 	outletUserRoutes.RegisterRoutes(adminGroup, outletUserController)
 	// route khusus staff
