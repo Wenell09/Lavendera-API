@@ -11,6 +11,8 @@ import (
 	discountRoutes "github.com/Wenell09/lavendera-api/internal/discount/routes"
 	OutletController "github.com/Wenell09/lavendera-api/internal/outlet/controller"
 	OutletRoutes "github.com/Wenell09/lavendera-api/internal/outlet/routes"
+	outletPaymentMethodController "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/controller"
+	outletPaymentMethodRoutes "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/routes"
 	outletUserController "github.com/Wenell09/lavendera-api/internal/outlet_user/controller"
 	outletUserRoutes "github.com/Wenell09/lavendera-api/internal/outlet_user/routes"
 	serviceController "github.com/Wenell09/lavendera-api/internal/service/controller"
@@ -32,6 +34,7 @@ func NewRouter(
 	discountController discountController.DiscountController,
 	customerController customerController.CustomerController,
 	outletController OutletController.OutletController,
+	outletPaymentMethodController outletPaymentMethodController.OutletPaymentMethodController,
 	userController userController.UserController,
 	outletUserController outletUserController.OutletUserController,
 	jwtConfig config.JWTConfig,
@@ -64,6 +67,7 @@ func NewRouter(
 	customerRoutes.RegisterRoutes(adminGroup, customerController)
 	userRoutes.RegisterRoutes(adminGroup, userController)
 	outletUserRoutes.RegisterRoutes(adminGroup, outletUserController)
+	outletPaymentMethodRoutes.RegisterRoutes(adminGroup, outletPaymentMethodController)
 	// route khusus staff
 	return r
 }

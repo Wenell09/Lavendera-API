@@ -7,6 +7,7 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/customer"
 	"github.com/Wenell09/lavendera-api/internal/discount"
 	"github.com/Wenell09/lavendera-api/internal/outlet"
+	"github.com/Wenell09/lavendera-api/internal/outlet_payment_method"
 	"github.com/Wenell09/lavendera-api/internal/outlet_user"
 	"github.com/Wenell09/lavendera-api/internal/service"
 	"github.com/Wenell09/lavendera-api/internal/service_category"
@@ -24,6 +25,7 @@ func InitializeApp() (*App, error) {
 		discount.WireSet,
 		customer.WireSet,
 		outlet.WireSet,
+		outlet_payment_method.WireSet,
 		user.WireSet,
 		outlet_user.WireSet,
 		appvalidator.NewValidator,

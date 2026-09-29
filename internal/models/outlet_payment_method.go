@@ -8,6 +8,7 @@ import (
 
 type OutletPaymentMethod struct {
 	ID            uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	TenantID      uuid.UUID `gorm:"type:uuid;not null;index"`
 	OutletID      uuid.UUID `gorm:"type:uuid;not null;index"`
 	Type          string
 	ProviderName  string

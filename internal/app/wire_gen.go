@@ -19,9 +19,12 @@ import (
 	controller6 "github.com/Wenell09/lavendera-api/internal/outlet/controller"
 	repository6 "github.com/Wenell09/lavendera-api/internal/outlet/repository"
 	service6 "github.com/Wenell09/lavendera-api/internal/outlet/service"
-	controller8 "github.com/Wenell09/lavendera-api/internal/outlet_user/controller"
-	repository8 "github.com/Wenell09/lavendera-api/internal/outlet_user/repository"
-	service8 "github.com/Wenell09/lavendera-api/internal/outlet_user/service"
+	controller7 "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/controller"
+	repository7 "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/repository"
+	service7 "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/service"
+	controller9 "github.com/Wenell09/lavendera-api/internal/outlet_user/controller"
+	repository9 "github.com/Wenell09/lavendera-api/internal/outlet_user/repository"
+	service9 "github.com/Wenell09/lavendera-api/internal/outlet_user/service"
 	controller3 "github.com/Wenell09/lavendera-api/internal/service/controller"
 	repository3 "github.com/Wenell09/lavendera-api/internal/service/repository"
 	service3 "github.com/Wenell09/lavendera-api/internal/service/service"
@@ -31,9 +34,9 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/applogger"
 	"github.com/Wenell09/lavendera-api/internal/shared/appvalidator"
 	"github.com/Wenell09/lavendera-api/internal/shared/config"
-	controller7 "github.com/Wenell09/lavendera-api/internal/user/controller"
-	repository7 "github.com/Wenell09/lavendera-api/internal/user/repository"
-	service7 "github.com/Wenell09/lavendera-api/internal/user/service"
+	controller8 "github.com/Wenell09/lavendera-api/internal/user/controller"
+	repository8 "github.com/Wenell09/lavendera-api/internal/user/repository"
+	service8 "github.com/Wenell09/lavendera-api/internal/user/service"
 )
 
 // Injectors from wire.go:
@@ -61,13 +64,16 @@ func InitializeApp() (*App, error) {
 	outletRepository := repository6.NewOutletRepository(db)
 	outletService := service6.NewOutletService(outletRepository, logger)
 	outletController := controller6.NewOutletController(outletService, validate)
-	userRepository := repository7.NewUserRepository(db)
-	userService := service7.NewUserService(userRepository, logger)
-	userController := controller7.NewUserController(userService, validate)
-	outletUserRepository := repository8.NewOutletUserRepository(db)
-	outletUserService := service8.NewOutletUserService(outletUserRepository, outletRepository, userRepository, logger)
-	outletUserController := controller8.NewOutletUserController(outletUserService, validate)
-	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, customerController, outletController, userController, outletUserController, jwtConfig, logger)
+	outletPaymentMethodRepository := repository7.NewOutletPaymentMethodRepository(db)
+	outletPaymentMethodService := service7.NewOutletPaymentMethodService(outletPaymentMethodRepository, outletRepository, logger)
+	outletPaymentMethodController := controller7.NewOutletPaymentMethodController(outletPaymentMethodService, validate)
+	userRepository := repository8.NewUserRepository(db)
+	userService := service8.NewUserService(userRepository, logger)
+	userController := controller8.NewUserController(userService, validate)
+	outletUserRepository := repository9.NewOutletUserRepository(db)
+	outletUserService := service9.NewOutletUserService(outletUserRepository, outletRepository, userRepository, logger)
+	outletUserController := controller9.NewOutletUserController(outletUserService, validate)
+	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, customerController, outletController, outletPaymentMethodController, userController, outletUserController, jwtConfig, logger)
 	app := NewApp(engine, db, logger)
 	return app, nil
 }
