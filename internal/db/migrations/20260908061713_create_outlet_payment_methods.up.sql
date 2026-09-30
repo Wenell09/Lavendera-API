@@ -1,6 +1,5 @@
 CREATE TABLE outlet_payment_methods (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     outlet_id UUID NOT NULL REFERENCES outlets(id) ON DELETE CASCADE,
     type VARCHAR(50) NOT NULL CHECK (type IN ('qris', 'bank_transfer')),
     provider_name VARCHAR(100) NOT NULL,

@@ -54,11 +54,10 @@ func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (*dto
 	a.Logger.WithFields(logrus.Fields{"user_id": user.ID, "tenant_id": user.TenantID}).Info("login successful")
 	return &dto.LoginResponse{
 		User: dto.UserResponse{
-			ID:       user.ID.String(),
-			TenantID: user.TenantID.String(),
-			Name:     user.Name,
-			Email:    user.Email,
-			Role:     user.Role,
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+			Role:  user.Role,
 		},
 		Token: token,
 	}, nil
@@ -104,7 +103,17 @@ func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest)
 	}
 	a.Logger.WithFields(logrus.Fields{"tenant_id": tenant.ID, "user_id": user.ID, "email": email}).Info("register successful")
 	return &dto.RegisterResponse{
-		Tenant: dto.TenantResponse{ID: tenant.ID.String(), Name: tenant.Name, Slug: tenant.Slug, Email: tenant.Email},
-		User:   dto.UserResponse{ID: user.ID.String(), TenantID: user.TenantID.String(), Name: user.Name, Email: user.Email, Role: user.Role},
+		Tenant: dto.TenantResponse{
+			ID:    tenant.ID,
+			Name:  tenant.Name,
+			Slug:  tenant.Slug,
+			Email: tenant.Email,
+		},
+		User: dto.UserResponse{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+			Role:  user.Role,
+		},
 	}, nil
 }

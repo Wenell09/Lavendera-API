@@ -92,19 +92,19 @@ func (s *OutletUserServiceImpl) Assign(ctx context.Context, req dto.CreateOutlet
 	logger.Info("user assigned to outlet successfully")
 
 	return &dto.OutletUserResponse{
-		OutletID:  outletUser.OutletID,
-		UserID:    outletUser.UserID,
-		CreatedAt: outletUser.CreatedAt,
-		Outlet: &dto.OutletUserOutletResponse{
+		Outlet: dto.OutletUserOutletResponse{
+			ID:   outlet.ID,
 			Name: outlet.Name,
 			Slug: outlet.Slug,
 		},
-		User: &dto.OutletUserUserResponse{
+		User: dto.OutletUserUserResponse{
+			ID:       user.ID,
 			Name:     user.Name,
 			Email:    user.Email,
 			Role:     user.Role,
 			IsActive: user.IsActive,
 		},
+		CreatedAt: outletUser.CreatedAt,
 	}, nil
 }
 
@@ -171,19 +171,19 @@ func (s *OutletUserServiceImpl) FindByOutletID(ctx context.Context, outletID uui
 	responses := []dto.OutletUserResponse{}
 	for _, ou := range outletUsers {
 		responses = append(responses, dto.OutletUserResponse{
-			OutletID:  ou.OutletID,
-			UserID:    ou.UserID,
-			CreatedAt: ou.CreatedAt,
-			Outlet: &dto.OutletUserOutletResponse{
+			Outlet: dto.OutletUserOutletResponse{
+				ID:   outlet.ID,
 				Name: outlet.Name,
 				Slug: outlet.Slug,
 			},
-			User: &dto.OutletUserUserResponse{
+			User: dto.OutletUserUserResponse{
+				ID:       ou.User.ID,
 				Name:     ou.User.Name,
 				Email:    ou.User.Email,
 				Role:     ou.User.Role,
 				IsActive: ou.User.IsActive,
 			},
+			CreatedAt: ou.CreatedAt,
 		})
 	}
 
