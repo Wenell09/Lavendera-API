@@ -28,3 +28,14 @@ func OutletPaymentMethodsTenantScope(ctx context.Context) func(db *gorm.DB) *gor
 			Where("outlets.tenant_id = ?", tenantID)
 	}
 }
+
+func OutletUsersTenantScope(ctx context.Context) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		tenantID, ok := appcontext.TenantIDFromContext(ctx)
+		if !ok || tenantID == uuid.Nil {
+			return db.Where("1 = 0")
+		}
+		return db.Joins("JOIN outlets ON outlets.id = outlet_users.outlet_id").
+			Where("outlets.tenant_id = ?", tenantID)
+	}
+}

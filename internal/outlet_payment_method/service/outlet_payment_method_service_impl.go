@@ -128,40 +128,41 @@ func (s *OutletPaymentMethodServiceImpl) FindByID(ctx context.Context, id uuid.U
 func (s *OutletPaymentMethodServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateOutletPaymentMethodRequest) (*dto.OutletPaymentMethodResponse, error) {
 	logger := utils.LogWithContext(s.Logger, ctx).WithField("payment_id", id)
 
-	payment, err := s.PaymentMethodRepo.FindByID(ctx, id)
-	if err != nil {
+	updates := make(map[string]interface{})
+	if req.Type != nil {
+		updates["type"] = *req.Type
+	}
+	if req.ProviderName != nil {
+		updates["provider_name"] = *req.ProviderName
+	}
+	if req.AccountNumber != nil {
+		updates["account_number"] = req.AccountNumber
+	}
+	if req.AccountName != nil {
+		updates["account_name"] = *req.AccountName
+	}
+	if req.QRImageURL != nil {
+		updates["qr_image_url"] = req.QRImageURL
+	}
+	if req.IsActive != nil {
+		updates["is_active"] = *req.IsActive
+	}
+
+	if err := s.PaymentMethodRepo.Update(ctx, id, updates); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.NotFoundError{Msg: "outlet payment method not found"}
 		}
-		logger.WithError(err).Error("failed to find outlet payment method")
-		return nil, err
-	}
-
-	if req.Type != nil {
-		payment.Type = *req.Type
-	}
-	if req.ProviderName != nil {
-		payment.ProviderName = *req.ProviderName
-	}
-	if req.AccountNumber != nil {
-		payment.AccountNumber = req.AccountNumber
-	}
-	if req.AccountName != nil {
-		payment.AccountName = *req.AccountName
-	}
-	if req.QRImageURL != nil {
-		payment.QRImageURL = req.QRImageURL
-	}
-	if req.IsActive != nil {
-		payment.IsActive = *req.IsActive
-	}
-
-	if err := s.PaymentMethodRepo.Update(ctx, payment); err != nil {
 		logger.WithError(err).Error("failed to update outlet payment method")
 		return nil, err
 	}
 
-	res := toOutletPaymentMethodResponse(payment)
+	updatedPayment, err := s.PaymentMethodRepo.FindByID(ctx, id)
+	if err != nil {
+		logger.WithError(err).Error("failed to find updated outlet payment method")
+		return nil, err
+	}
+
+	res := toOutletPaymentMethodResponse(updatedPayment)
 	return &res, nil
 }
 
