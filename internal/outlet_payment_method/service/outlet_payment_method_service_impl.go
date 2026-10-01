@@ -31,11 +31,10 @@ func NewOutletPaymentMethodService(paymentMethodRepo paymentMethodRepo.OutletPay
 	}
 }
 
-func (s *OutletPaymentMethodServiceImpl) Create(ctx context.Context, req dto.OutletPaymentMethodRequest) (*dto.OutletPaymentMethodResponse, error) {
+func (s *OutletPaymentMethodServiceImpl) Create(ctx context.Context, req dto.CreateOutletPaymentMethodRequest) (*dto.OutletPaymentMethodResponse, error) {
 	logger := utils.LogWithContext(s.Logger, ctx).WithField("outlet_id", req.OutletID)
 
-	tenantID, exists := appcontext.TenantIDFromContext(ctx)
-	if !exists {
+	if _, exists := appcontext.TenantIDFromContext(ctx); !exists {
 		return nil, apperror.UnauthorizedError{Msg: "tenant_id not found"}
 	}
 
@@ -63,7 +62,6 @@ func (s *OutletPaymentMethodServiceImpl) Create(ctx context.Context, req dto.Out
 	}
 
 	payment := models.OutletPaymentMethod{
-		TenantID:      tenantID,
 		OutletID:      req.OutletID,
 		Type:          req.Type,
 		ProviderName:  req.ProviderName,
@@ -190,8 +188,6 @@ func (s *OutletPaymentMethodServiceImpl) Delete(ctx context.Context, id uuid.UUI
 func toOutletPaymentMethodResponse(m *models.OutletPaymentMethod) dto.OutletPaymentMethodResponse {
 	res := dto.OutletPaymentMethodResponse{
 		ID:            m.ID,
-		OutletID:      m.OutletID,
-		Outlet:        dto.OutletResponse{Name: m.Outlet.Name, Slug: m.Outlet.Slug},
 		Type:          m.Type,
 		ProviderName:  m.ProviderName,
 		AccountNumber: m.AccountNumber,

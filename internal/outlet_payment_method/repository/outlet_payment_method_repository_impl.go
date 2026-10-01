@@ -20,13 +20,13 @@ func NewOutletPaymentMethodRepository(db *gorm.DB) OutletPaymentMethodRepository
 
 func (r *OutletPaymentMethodRepositoryImpl) Exists(ctx context.Context, outletID uuid.UUID, paymentType string, providerName string, accountNumber *string) (bool, error) {
 	var count int64
-	query := r.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Model(&models.OutletPaymentMethod{}).
-		Where("outlet_id = ? AND type = ? AND provider_name = ?", outletID, paymentType, providerName)
+	query := r.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).Model(&models.OutletPaymentMethod{}).
+		Where("outlet_payment_methods.outlet_id = ? AND outlet_payment_methods.type = ? AND outlet_payment_methods.provider_name = ?", outletID, paymentType, providerName)
 
 	if accountNumber != nil {
-		query = query.Where("account_number = ?", *accountNumber)
+		query = query.Where("outlet_payment_methods.account_number = ?", *accountNumber)
 	} else {
-		query = query.Where("account_number IS NULL")
+		query = query.Where("outlet_payment_methods.account_number IS NULL")
 	}
 
 	err := query.Count(&count).Error
@@ -41,11 +41,12 @@ func (r *OutletPaymentMethodRepositoryImpl) FindAll(ctx context.Context, outletI
 	var payments []models.OutletPaymentMethod
 	var total int64
 
-	query := r.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Model(&models.OutletPaymentMethod{}).Where("outlet_id = ?", outletID)
+	query := r.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).Model(&models.OutletPaymentMethod{}).
+		Where("outlet_payment_methods.outlet_id = ?", outletID)
 
 	if filter.Search != "" {
 		searchPattern := "%" + filter.Search + "%"
-		query = query.Where("provider_name ILIKE ? OR account_name ILIKE ?", searchPattern, searchPattern)
+		query = query.Where("outlet_payment_methods.provider_name ILIKE ? OR outlet_payment_methods.account_name ILIKE ?", searchPattern, searchPattern)
 	}
 
 	if err := query.Count(&total).Error; err != nil {
@@ -53,13 +54,14 @@ func (r *OutletPaymentMethodRepositoryImpl) FindAll(ctx context.Context, outletI
 	}
 
 	offset := (filter.Page - 1) * filter.Limit
-	err := query.Preload("Outlet").Order("created_at DESC").Offset(offset).Limit(filter.Limit).Find(&payments).Error
+	err := query.Preload("Outlet").Order("outlet_payment_methods.created_at DESC").Offset(offset).Limit(filter.Limit).Find(&payments).Error
 	return payments, total, err
 }
 
 func (r *OutletPaymentMethodRepositoryImpl) FindByID(ctx context.Context, id uuid.UUID) (*models.OutletPaymentMethod, error) {
 	var payment models.OutletPaymentMethod
-	err := r.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Preload("Outlet").Where("id = ?", id).First(&payment).Error
+	err := r.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).Preload("Outlet").
+		Where("outlet_payment_methods.id = ?", id).First(&payment).Error
 	if err != nil {
 		return nil, err
 	}
@@ -71,5 +73,6 @@ func (r *OutletPaymentMethodRepositoryImpl) Update(ctx context.Context, outletPa
 }
 
 func (r *OutletPaymentMethodRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Where("id = ?", id).Delete(&models.OutletPaymentMethod{}).Error
+	return r.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).
+		Where("outlet_payment_methods.id = ?", id).Delete(&models.OutletPaymentMethod{}).Error
 }

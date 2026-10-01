@@ -32,7 +32,7 @@ func (ctrl *OutletPaymentMethodControllerImpl) Create(c *gin.Context) {
 		return
 	}
 
-	var req dto.OutletPaymentMethodRequest
+	var req dto.CreateOutletPaymentMethodRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		apperror.NewHandleError(c, apperror.ValidationError{Msg: "invalid request body"})
 		return

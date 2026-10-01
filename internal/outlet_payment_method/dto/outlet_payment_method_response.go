@@ -12,17 +12,15 @@ type OutletResponse struct {
 }
 
 type OutletPaymentMethodResponse struct {
-	ID            uuid.UUID      `json:"id"`
-	OutletID      uuid.UUID      `json:"outlet_id"`
-	Outlet        OutletResponse `json:"outlet"`
-	Type          string         `json:"type"`
-	ProviderName  string         `json:"provider_name"`
-	AccountNumber *string        `json:"account_number"`
-	AccountName   string         `json:"account_name"`
-	QRImageURL    *string        `json:"qr_image_url"`
-	IsActive      bool           `json:"is_active"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
+	ID            uuid.UUID `json:"id"`
+	Type          string    `json:"type"`
+	ProviderName  string    `json:"provider_name"`
+	AccountNumber *string   `json:"account_number"`
+	AccountName   string    `json:"account_name"`
+	QRImageURL    *string   `json:"qr_image_url"`
+	IsActive      bool      `json:"is_active"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 type PaginationResponse struct {

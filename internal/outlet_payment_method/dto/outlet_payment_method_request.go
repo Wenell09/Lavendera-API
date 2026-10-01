@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type OutletPaymentMethodRequest struct {
+type CreateOutletPaymentMethodRequest struct {
 	OutletID      uuid.UUID `json:"outlet_id" validate:"required"`
 	Type          string    `json:"type" validate:"required,oneof=qris bank_transfer"`
 	ProviderName  string    `json:"provider_name" validate:"required"`
