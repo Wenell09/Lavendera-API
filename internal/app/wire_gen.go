@@ -34,6 +34,9 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/applogger"
 	"github.com/Wenell09/lavendera-api/internal/shared/appvalidator"
 	"github.com/Wenell09/lavendera-api/internal/shared/config"
+	controller10 "github.com/Wenell09/lavendera-api/internal/tenant/controller"
+	repository10 "github.com/Wenell09/lavendera-api/internal/tenant/repository"
+	service10 "github.com/Wenell09/lavendera-api/internal/tenant/service"
 	controller8 "github.com/Wenell09/lavendera-api/internal/user/controller"
 	repository8 "github.com/Wenell09/lavendera-api/internal/user/repository"
 	service8 "github.com/Wenell09/lavendera-api/internal/user/service"
@@ -73,7 +76,10 @@ func InitializeApp() (*App, error) {
 	outletUserRepository := repository9.NewOutletUserRepository(db)
 	outletUserService := service9.NewOutletUserService(outletUserRepository, outletRepository, userRepository, logger)
 	outletUserController := controller9.NewOutletUserController(outletUserService, validate)
-	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, customerController, outletController, outletPaymentMethodController, userController, outletUserController, jwtConfig, logger)
+	tenantRepository := repository10.NewTenantRepository(db)
+	tenantService := service10.NewTenantService(tenantRepository, logger)
+	tenantController := controller10.NewTenantController(tenantService, validate)
+	engine := NewRouter(authController, serviceCategoryController, serviceController, discountController, customerController, outletController, outletPaymentMethodController, userController, outletUserController, tenantController, jwtConfig, logger)
 	app := NewApp(engine, db, logger)
 	return app, nil
 }
