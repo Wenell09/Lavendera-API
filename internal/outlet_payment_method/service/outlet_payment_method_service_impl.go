@@ -85,6 +85,15 @@ func (s *OutletPaymentMethodServiceImpl) FindAll(ctx context.Context, outletID u
 	logger := utils.LogWithContext(s.Logger, ctx).WithField("outlet_id", outletID)
 	filter.SetDefault()
 
+	_, err := s.OutletRepo.FindByID(ctx, outletID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFoundError{Msg: "outlet not found"}
+		}
+		logger.WithError(err).Error("failed to find outlet")
+		return nil, err
+	}
+
 	payments, total, err := s.PaymentMethodRepo.FindAll(ctx, outletID, filter)
 	if err != nil {
 		logger.WithError(err).Error("failed to find outlet payment methods")
@@ -158,6 +167,9 @@ func (s *OutletPaymentMethodServiceImpl) Update(ctx context.Context, id uuid.UUI
 
 	updatedPayment, err := s.PaymentMethodRepo.FindByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFoundError{Msg: "outlet payment method not found"}
+		}
 		logger.WithError(err).Error("failed to find updated outlet payment method")
 		return nil, err
 	}
