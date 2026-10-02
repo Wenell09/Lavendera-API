@@ -28,7 +28,7 @@ func (o *OutletPaymentMethodRepositoryImpl) Create(ctx context.Context, outletPa
 
 // Delete implements [OutletPaymentMethodRepository].
 func (o *OutletPaymentMethodRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
-	if err := o.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).
+	if err := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).
 		Where("id = ?", id).Delete(&models.OutletPaymentMethod{}).Error; err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (o *OutletPaymentMethodRepositoryImpl) Delete(ctx context.Context, id uuid.
 // Exists implements [OutletPaymentMethodRepository].
 func (o *OutletPaymentMethodRepositoryImpl) Exists(ctx context.Context, outletID uuid.UUID, paymentType string, providerName string, accountNumber *string) (bool, error) {
 	var count int64
-	query := o.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).Model(&models.OutletPaymentMethod{}).
+	query := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).Model(&models.OutletPaymentMethod{}).
 		Where("outlet_id = ? AND type = ? AND provider_name = ?", outletID, paymentType, providerName)
 
 	if accountNumber != nil {
@@ -58,7 +58,7 @@ func (o *OutletPaymentMethodRepositoryImpl) FindAll(ctx context.Context, outletI
 	payments := []models.OutletPaymentMethod{}
 	var total int64
 
-	query := o.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).Model(&models.OutletPaymentMethod{}).
+	query := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).Model(&models.OutletPaymentMethod{}).
 		Where("outlet_id = ?", outletID)
 
 	if filter.Search != "" {
@@ -80,7 +80,7 @@ func (o *OutletPaymentMethodRepositoryImpl) FindAll(ctx context.Context, outletI
 // FindByID implements [OutletPaymentMethodRepository].
 func (o *OutletPaymentMethodRepositoryImpl) FindByID(ctx context.Context, id uuid.UUID) (*models.OutletPaymentMethod, error) {
 	payment := &models.OutletPaymentMethod{}
-	if err := o.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).Preload("Outlet").
+	if err := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).Preload("Outlet").
 		Where("id = ?", id).First(payment).Error; err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (o *OutletPaymentMethodRepositoryImpl) Update(ctx context.Context, id uuid.
 	if len(paymentMethod) == 0 {
 		return nil
 	}
-	if err := o.DB.WithContext(ctx).Scopes(database.OutletPaymentMethodsTenantScope(ctx)).
+	if err := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).
 		Model(&models.OutletPaymentMethod{}).Where("id = ?", id).Updates(paymentMethod).Error; err != nil {
 		return err
 	}

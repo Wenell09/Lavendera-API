@@ -14,7 +14,9 @@ type OutletUserRepositoryImpl struct {
 	DB *gorm.DB
 }
 
-func NewOutletUserRepository(db *gorm.DB) OutletUserRepository { return &OutletUserRepositoryImpl{DB: db} }
+func NewOutletUserRepository(db *gorm.DB) OutletUserRepository {
+	return &OutletUserRepositoryImpl{DB: db}
+}
 
 // Create implements [OutletUserRepository].
 func (o *OutletUserRepositoryImpl) Create(ctx context.Context, outletUser *models.OutletUser) error {
@@ -26,7 +28,7 @@ func (o *OutletUserRepositoryImpl) Create(ctx context.Context, outletUser *model
 
 // Delete implements [OutletUserRepository].
 func (o *OutletUserRepositoryImpl) Delete(ctx context.Context, outletID, userID uuid.UUID) error {
-	if err := o.DB.WithContext(ctx).Scopes(database.OutletUsersTenantScope(ctx)).
+	if err := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).
 		Where("outlet_id = ? AND user_id = ?", outletID, userID).
 		Delete(&models.OutletUser{}).Error; err != nil {
 		return err
@@ -37,7 +39,7 @@ func (o *OutletUserRepositoryImpl) Delete(ctx context.Context, outletID, userID 
 // Exists implements [OutletUserRepository].
 func (o *OutletUserRepositoryImpl) Exists(ctx context.Context, outletID, userID uuid.UUID) (bool, error) {
 	var count int64
-	if err := o.DB.WithContext(ctx).Scopes(database.OutletUsersTenantScope(ctx)).
+	if err := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).
 		Model(&models.OutletUser{}).
 		Where("outlet_id = ? AND user_id = ?", outletID, userID).
 		Count(&count).Error; err != nil {
@@ -50,7 +52,7 @@ func (o *OutletUserRepositoryImpl) Exists(ctx context.Context, outletID, userID 
 func (o *OutletUserRepositoryImpl) FindByOutletID(ctx context.Context, outletID uuid.UUID, filter dto.OutletUserFilter) ([]models.OutletUser, int64, error) {
 	outletUsers := []models.OutletUser{}
 	var total int64
-	query := o.DB.WithContext(ctx).Scopes(database.OutletUsersTenantScope(ctx)).
+	query := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).
 		Model(&models.OutletUser{}).
 		Where("outlet_users.outlet_id = ?", outletID)
 	if filter.Search != "" {

@@ -18,24 +18,16 @@ func TenantScope(ctx context.Context) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func OutletPaymentMethodsTenantScope(ctx context.Context) func(db *gorm.DB) *gorm.DB {
+func TenantScopeByOutlet(ctx context.Context) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		tenantID, ok := appcontext.TenantIDFromContext(ctx)
 		if !ok || tenantID == uuid.Nil {
 			return db.Where("1 = 0")
 		}
-		return db.Joins("JOIN outlets ON outlets.id = outlet_payment_methods.outlet_id").
-			Where("outlets.tenant_id = ?", tenantID)
-	}
-}
-
-func OutletUsersTenantScope(ctx context.Context) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		tenantID, ok := appcontext.TenantIDFromContext(ctx)
-		if !ok || tenantID == uuid.Nil {
-			return db.Where("1 = 0")
-		}
-		return db.Joins("JOIN outlets ON outlets.id = outlet_users.outlet_id").
-			Where("outlets.tenant_id = ?", tenantID)
+		subQuery := db.Session(&gorm.Session{NewDB: true}).
+			Table("outlets").
+			Select("id").
+			Where("tenant_id = ?", tenantID)
+		return db.Where("outlet_id IN (?)", subQuery)
 	}
 }
