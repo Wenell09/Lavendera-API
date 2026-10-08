@@ -14,5 +14,6 @@ type CustomerRepository interface {
 	Create(ctx context.Context, customer *models.Customer) error
 	Update(ctx context.Context, id uuid.UUID, customer map[string]interface{}) error
 	ExistsByName(ctx context.Context, name string) (bool, error)
+	ExistsByPhone(ctx context.Context, phone string) (bool, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }

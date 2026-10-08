@@ -51,6 +51,15 @@ func (c *CustomerServiceImpl) Create(ctx context.Context, req dto.CreateCustomer
 		return nil, apperror.ConflictError{Msg: "customer name already exists"}
 	}
 
+	existsPhone, err := c.Repository.ExistsByPhone(ctx, customer.Phone)
+	if err != nil {
+		logger.WithError(err).Error("failed to check customer phone existence")
+		return nil, err
+	}
+	if existsPhone {
+		return nil, apperror.ConflictError{Msg: "customer phone already exists"}
+	}
+
 	if err := c.Repository.Create(ctx, customer); err != nil {
 		logger.WithError(err).Error("failed to create customer in database")
 		return nil, err
@@ -175,7 +184,18 @@ func (c *CustomerServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.
 		updateData["name"] = newName
 	}
 	if req.Phone != nil {
-		updateData["phone"] = strings.TrimSpace(*req.Phone)
+		newPhone := strings.TrimSpace(*req.Phone)
+		if newPhone != customer.Phone {
+			existsPhone, err := c.Repository.ExistsByPhone(ctx, newPhone)
+			if err != nil {
+				logger.WithError(err).Error("failed to check customer phone existence")
+				return nil, err
+			}
+			if existsPhone {
+				return nil, apperror.ConflictError{Msg: "customer phone already exists"}
+			}
+		}
+		updateData["phone"] = newPhone
 	}
 	if req.Address != nil {
 		updateData["address"] = req.Address

@@ -70,6 +70,15 @@ func (c *CustomerRepositoryImpl) ExistsByName(ctx context.Context, name string) 
 	return count > 0, nil
 }
 
+// existsByPhone implements [CustomerRepository].
+func (c *CustomerRepositoryImpl) ExistsByPhone(ctx context.Context, phone string) (bool, error) {
+	var count int64
+	if err := c.DB.WithContext(ctx).Scopes(database.TenantScope(ctx)).Model(&models.Customer{}).Where("phone = ?", phone).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 // Update implements [CustomerRepository].
 func (c *CustomerRepositoryImpl) Update(ctx context.Context, id uuid.UUID, customer map[string]interface{}) error {
 	if len(customer) == 0 {
