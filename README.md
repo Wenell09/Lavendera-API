@@ -37,6 +37,10 @@ Menggunakan **Layered Clean Architecture / Modular Monolith**:
 - **Service Management**: CRUD layanan laundry, filter kategori, pagination, & search.
 - **Discount Management**: CRUD diskon promosi (persentase / nominal).
 - **User / Staff Management**: CRUD akun user/staf per tenant, pagination, filter role, & proteksi hapus diri sendiri.
+- **Customer Management**: CRUD pelanggan per tenant, pagination, & search.
+- **Tenant Management**: Profil tenant & perbarui data tenant.
+- **Outlet Payment Methods**: Manajemen metode pembayaran spesifik outlet.
+- **Outlet User Assignment**: Penugasan staf/user ke outlet tertentu.
 
 ---
 
@@ -52,15 +56,18 @@ Menggunakan **Layered Clean Architecture / Modular Monolith**:
 | `GET` | `/api/v1/outlets/:id` | Bearer | `ADMIN` | Detail Outlet |
 | `PATCH` | `/api/v1/outlets/:id` | Bearer | `ADMIN` | Update Outlet |
 | `DELETE` | `/api/v1/outlets/:id` | Bearer | `ADMIN` | Hapus Outlet |
-| `GET` | `/api/v1/service-categories` | Bearer | `ADMIN` | List Kategori Layanan |
+| `GET` | `/api/v1/service-categories` | Bearer | `ADMIN, STAFF` | List Kategori Layanan |
+| `GET` | `/api/v1/service-categories/:id` | Bearer | `ADMIN, STAFF` | Detail Kategori Layanan |
 | `POST` | `/api/v1/service-categories` | Bearer | `ADMIN` | Buat Kategori Layanan |
 | `PATCH` | `/api/v1/service-categories/:id` | Bearer | `ADMIN` | Update Kategori Layanan |
 | `DELETE` | `/api/v1/service-categories/:id` | Bearer | `ADMIN` | Hapus Kategori Layanan |
-| `GET` | `/api/v1/services` | Bearer | `ADMIN` | List Layanan Laundry |
+| `GET` | `/api/v1/services` | Bearer | `ADMIN, STAFF` | List Layanan Laundry |
+| `GET` | `/api/v1/services/:id` | Bearer | `ADMIN, STAFF` | Detail Layanan Laundry |
 | `POST` | `/api/v1/services` | Bearer | `ADMIN` | Buat Layanan Laundry |
 | `PATCH` | `/api/v1/services/:id` | Bearer | `ADMIN` | Update Layanan Laundry |
 | `DELETE` | `/api/v1/services/:id` | Bearer | `ADMIN` | Hapus Layanan Laundry |
-| `GET` | `/api/v1/discounts` | Bearer | `ADMIN` | List Diskon Promosi |
+| `GET` | `/api/v1/discounts` | Bearer | `ADMIN, STAFF` | List Diskon Promosi |
+ `GET` | `/api/v1/discounts/:id` | Bearer | `ADMIN, STAFF` | Detail Diskon Promosi |
 | `POST` | `/api/v1/discounts` | Bearer | `ADMIN` | Buat Diskon Promosi |
 | `PATCH` | `/api/v1/discounts/:id` | Bearer | `ADMIN` | Update Diskon Promosi |
 | `DELETE` | `/api/v1/discounts/:id` | Bearer | `ADMIN` | Hapus Diskon Promosi |
@@ -69,6 +76,21 @@ Menggunakan **Layered Clean Architecture / Modular Monolith**:
 | `GET` | `/api/v1/users/:id` | Bearer | `ADMIN` | Detail User / Staff |
 | `PATCH` | `/api/v1/users/:id` | Bearer | `ADMIN` | Update User / Staff |
 | `DELETE` | `/api/v1/users/:id` | Bearer | `ADMIN` | Hapus User / Staff |
+| `POST` | `/api/v1/customers` | Bearer | `ADMIN` | Buat Customer |
+| `GET` | `/api/v1/customers` | Bearer | `ADMIN, STAFF` | List Customer |
+| `GET` | `/api/v1/customers/:id` | Bearer | `ADMIN, STAFF` | Detail Customer |
+| `PATCH` | `/api/v1/customers/:id` | Bearer | `ADMIN` | Update Customer |
+| `DELETE` | `/api/v1/customers/:id` | Bearer | `ADMIN` | Hapus Customer |
+| `GET` | `/api/v1/tenants/:id` | Bearer | `ADMIN` | Detail Tenant |
+| `PATCH` | `/api/v1/tenants/:id` | Bearer | `ADMIN` | Update Tenant |
+| `POST` | `/api/v1/outlets/:id/payment-methods` | Bearer | `ADMIN` | Tambah Payment Method |
+| `GET` | `/api/v1/outlets/:id/payment-methods` | Bearer | `ADMIN, STAFF` | List Payment Methods |
+| `GET` | `/api/v1/outlets/:id/payment-methods/:payment_method_id` | Bearer | `ADMIN, STAFF` | Detail Payment Method |
+| `PATCH` | `/api/v1/outlets/:id/payment-methods/:payment_method_id` | Bearer | `ADMIN` | Update Payment Method |
+| `DELETE` | `/api/v1/outlets/:id/payment-methods/:payment_method_id` | Bearer | `ADMIN` | Hapus Payment Method |
+| `GET` | `/api/v1/outlets/:id/users` | Bearer | `ADMIN` | List Users of Outlet |
+| `POST` | `/api/v1/outlets/:id/users` | Bearer | `ADMIN` | Assign User to Outlet |
+| `DELETE` | `/api/v1/outlets/:id/users/:user_id` | Bearer | `ADMIN` | Unassign User from Outlet |
 
 ---
 

@@ -40,6 +40,14 @@
 │   │   │   └── auth_service_impl.go
 │   │   └── wire.go                   # WireSet untuk auth
 │   │
+│   ├── customer/                     # Modul Pelanggan Laundry
+│   │   ├── controller/
+│   │   ├── dto/
+│   │   ├── repository/
+│   │   ├── routes/
+│   │   ├── service/
+│   │   └── wire.go
+│   │
 │   ├── outlet/                       # Modul Manajemen Outlet Laundry
 │   │   ├── controller/
 │   │   │   ├── outlet_controller.go
@@ -56,6 +64,38 @@
 │   │   ├── service/
 │   │   │   ├── outlet_service.go
 │   │   │   └── outlet_service_impl.go
+│   │   └── wire.go
+│   │
+│   ├── outlet_payment_method/        # Modul Payment Method per Outlet
+│   │   ├── controller/
+│   │   ├── dto/
+│   │   ├── repository/
+│   │   ├── routes/
+│   │   ├── service/
+│   │   └── wire.go
+│   │
+│   ├── outlet_user/                  # Modul Assign User ke Outlet
+│   │   ├── controller/
+│   │   ├── dto/
+│   │   ├── repository/
+│   │   ├── routes/
+│   │   ├── service/
+│   │   └── wire.go
+│   │
+│   ├── tenant/                       # Modul Update Profile Tenant
+│   │   ├── controller/
+│   │   ├── dto/
+│   │   ├── repository/
+│   │   ├── routes/
+│   │   ├── service/
+│   │   └── wire.go
+│   │
+│   ├── user/                         # Modul Manajemen User & Staff
+│   │   ├── controller/
+│   │   ├── dto/
+│   │   ├── repository/
+│   │   ├── routes/
+│   │   ├── service/
 │   │   └── wire.go
 │   │
 │   ├── service_category/             # Modul Kategori Layanan (misal: Kiloan, Satuan)

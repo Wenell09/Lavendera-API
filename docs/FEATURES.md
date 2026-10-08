@@ -21,9 +21,10 @@ Status diklasifikasikan menjadi:
 | **Service (Layanan Laundry)** | **DONE** | Ya | Ya | Ya | Ya | CRUD lengkap, pagination, search, filter `category_id`. |
 | **Discounts** | **DONE** | Ya | Ya | Ya | Ya | CRUD lengkap, pagination, search, auto cap 100%. |
 | **User / Staff Management** | **DONE** | Ya | Ya | Ya | Ya | CRUD lengkap, pagination, search, filter role, proteksi hapus akun sendiri. |
-| **Outlet User Assignment** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `OutletUser` dan tabel migrasi `outlet_users` ada, namun belum ada layer aplikasi. |
-| **Outlet Payment Methods** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `OutletPaymentMethod` dan tabel migrasi ada, belum ada layer aplikasi. |
-| **Customer Management** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `Customer` dan tabel migrasi ada, belum ada layer aplikasi. |
+| **Outlet User Assignment** | **DONE** | Ya | Ya | Ya | Ya | Assign/unassign user ke outlet, GET list users by outlet. |
+| **Outlet Payment Methods** | **DONE** | Ya | Ya | Ya | Ya | CRUD payment method per outlet. |
+| **Customer Management** | **DONE** | Ya | Ya | Ya | Ya | CRUD customer per tenant, pagination, search. |
+| **Tenant Management** | **DONE** | Ya | Ya | Ya | Ya | GET detail dan PATCH update tenant (name, slug). |
 | **Order Management** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `Order` dan `OrderItem` serta tabel migrasi ada, belum ada layer aplikasi. |
 | **Payment Management** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `Payment` dan tabel migrasi ada, belum ada layer aplikasi. |
 | **Notifications** | **TODO** | Tidak | Tidak | Tidak | Tidak | Model `Notification` dan tabel migrasi ada, belum ada layer aplikasi. |
@@ -164,9 +165,7 @@ Status diklasifikasikan menjadi:
 
 Tabel dan model berikut telah tersedia di skema database ([internal/models/](file:///home/wenell/projects/lavendera-API/internal/models/) dan migrasi SQL), tetapi **belum diimplementasikan** layer Repository, Service, Controller, maupun Route-nya:
 
-1. **`Customer`** ([internal/models/customer.go](file:///home/wenell/projects/lavendera-API/internal/models/customer.go)): Pengelolaan pelanggan laundry per tenant.
-2. **`Order` & `OrderItem`** ([internal/models/order.go](file:///home/wenell/projects/lavendera-API/internal/models/order.go), [internal/models/order_item.go](file:///home/wenell/projects/lavendera-API/internal/models/order_item.go)): Pembuatan dan tracking pesanan laundry, status order (`MENUNGGU_KONFIRMASI`, `DIPROSES`, `SELESAI`, `DIAMBIL`, `DIBATALKAN`), serta perhitungan total & diskon.
-3. **`Payment` & `OutletPaymentMethod`** ([internal/models/payment.go](file:///home/wenell/projects/lavendera-API/internal/models/payment.go), [internal/models/outlet_payment_method.go](file:///home/wenell/projects/lavendera-API/internal/models/outlet_payment_method.go)): Transaksi pembayaran (cash, QRIS, bank transfer), verifikasi, dan konfigurasi pembayaran outlet.
-4. **`Notification`** ([internal/models/notification.go](file:///home/wenell/projects/lavendera-API/internal/models/notification.go)): Notifikasi pesanan atau sistem kepada user.
-5. **`AuditLog`** ([internal/models/audit_logs.go](file:///home/wenell/projects/lavendera-API/internal/models/audit_logs.go)): Pencatatan riwayat perubahan data (*old_data* dan *new_data* JSONB).
-6. **`OutletUser`** ([internal/models/outlet_user.go](file:///home/wenell/projects/lavendera-API/internal/models/outlet_user.go)): Pemetaan penugasan staff/user ke outlet tertentu.
+1. **`Order` & `OrderItem`** ([internal/models/order.go](file:///home/wenell/projects/lavendera-API/internal/models/order.go), [internal/models/order_item.go](file:///home/wenell/projects/lavendera-API/internal/models/order_item.go)): Pembuatan dan tracking pesanan laundry, status order (`MENUNGGU_KONFIRMASI`, `DIPROSES`, `SELESAI`, `DIAMBIL`, `DIBATALKAN`), serta perhitungan total & diskon.
+2. **`Payment`** ([internal/models/payment.go](file:///home/wenell/projects/lavendera-API/internal/models/payment.go)): Transaksi pembayaran (cash, QRIS, bank transfer) dan verifikasi.
+3. **`Notification`** ([internal/models/notification.go](file:///home/wenell/projects/lavendera-API/internal/models/notification.go)): Notifikasi pesanan atau sistem kepada user.
+4. **`AuditLog`** ([internal/models/audit_logs.go](file:///home/wenell/projects/lavendera-API/internal/models/audit_logs.go)): Pencatatan riwayat perubahan data (*old_data* dan *new_data* JSONB).

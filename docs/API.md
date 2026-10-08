@@ -19,19 +19,19 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 | 6 | `GET` | `/api/v1/outlets/:id` | Bearer JWT | `ADMIN` | Mengambil Detail Outlet Berdasarkan ID |
 | 7 | `PATCH` | `/api/v1/outlets/:id` | Bearer JWT | `ADMIN` | Mengubah Data Outlet Secara Parsial |
 | 8 | `DELETE` | `/api/v1/outlets/:id` | Bearer JWT | `ADMIN` | Menghapus Outlet Berdasarkan ID |
-| 9 | `GET` | `/api/v1/service-categories` | Bearer JWT | `ADMIN` | Mengambil Seluruh Kategori Layanan |
-| 10 | `GET` | `/api/v1/service-categories/:id` | Bearer JWT | `ADMIN` | Mengambil Kategori Layanan Berdasarkan ID |
+| 9 | `GET` | `/api/v1/service-categories` | Bearer JWT | `ADMIN, STAFF` | Mengambil Seluruh Kategori Layanan |
+| 10 | `GET` | `/api/v1/service-categories/:id` | Bearer JWT | `ADMIN, STAFF` | Mengambil Kategori Layanan Berdasarkan ID |
 | 11 | `POST` | `/api/v1/service-categories` | Bearer JWT | `ADMIN` | Membuat Kategori Layanan Baru |
 | 12 | `PATCH` | `/api/v1/service-categories/:id` | Bearer JWT | `ADMIN` | Mengubah Nama Kategori Layanan |
 | 13 | `DELETE` | `/api/v1/service-categories/:id` | Bearer JWT | `ADMIN` | Menghapus Kategori Layanan Berdasarkan ID |
 | 14 | `POST` | `/api/v1/services` | Bearer JWT | `ADMIN` | Membuat Layanan Laundry Baru |
-| 15 | `GET` | `/api/v1/services` | Bearer JWT | `ADMIN` | Mengambil Daftar Layanan (Paginated + Filter) |
-| 16 | `GET` | `/api/v1/services/:id` | Bearer JWT | `ADMIN` | Mengambil Detail Layanan Berdasarkan ID |
+| 15 | `GET` | `/api/v1/services` | Bearer JWT | `ADMIN, STAFF` | Mengambil Daftar Layanan (Paginated + Filter) |
+| 16 | `GET` | `/api/v1/services/:id` | Bearer JWT | `ADMIN, STAFF` | Mengambil Detail Layanan Berdasarkan ID |
 | 17 | `PATCH` | `/api/v1/services/:id` | Bearer JWT | `ADMIN` | Mengubah Data Layanan Secara Parsial |
 | 18 | `DELETE` | `/api/v1/services/:id` | Bearer JWT | `ADMIN` | Menghapus Layanan Berdasarkan ID |
 | 19 | `POST` | `/api/v1/discounts` | Bearer JWT | `ADMIN` | Membuat Diskon Promosi Baru |
-| 20 | `GET` | `/api/v1/discounts` | Bearer JWT | `ADMIN` | Mengambil Daftar Diskon (Paginated + Search) |
-| 21 | `GET` | `/api/v1/discounts/:id` | Bearer JWT | `ADMIN` | Mengambil Detail Diskon Berdasarkan ID |
+| 20 | `GET` | `/api/v1/discounts` | Bearer JWT | `ADMIN, STAFF` | Mengambil Daftar Diskon (Paginated + Search) |
+| 21 | `GET` | `/api/v1/discounts/:id` | Bearer JWT | `ADMIN, STAFF` | Mengambil Detail Diskon Berdasarkan ID |
 | 22 | `PATCH` | `/api/v1/discounts/:id` | Bearer JWT | `ADMIN` | Mengubah Data Diskon Secara Parsial |
 | 23 | `DELETE` | `/api/v1/discounts/:id` | Bearer JWT | `ADMIN` | Menghapus Diskon Berdasarkan ID |
 | 24 | `POST` | `/api/v1/users` | Bearer JWT | `ADMIN` | Membuat User / Staff Baru |
@@ -39,6 +39,21 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 | 26 | `GET` | `/api/v1/users/:id` | Bearer JWT | `ADMIN` | Mengambil Detail User Berdasarkan ID |
 | 27 | `PATCH` | `/api/v1/users/:id` | Bearer JWT | `ADMIN` | Mengubah Data User Secara Parsial |
 | 28 | `DELETE` | `/api/v1/users/:id` | Bearer JWT | `ADMIN` | Menghapus User Berdasarkan ID |
+| 29 | `POST` | `/api/v1/customers` | Bearer JWT | `ADMIN, STAFF` | Membuat Customer Baru |
+| 30 | `GET` | `/api/v1/customers` | Bearer JWT | `ADMIN, STAFF` | Mengambil Daftar Customer (Paginated + Search) |
+| 31 | `GET` | `/api/v1/customers/:id` | Bearer JWT | `ADMIN, STAFF` | Mengambil Detail Customer Berdasarkan ID |
+| 32 | `PATCH` | `/api/v1/customers/:id` | Bearer JWT | `ADMIN, STAFF` | Mengubah Data Customer Secara Parsial |
+| 33 | `DELETE` | `/api/v1/customers/:id` | Bearer JWT | `ADMIN, STAFF` | Menghapus Customer Berdasarkan ID |
+| 34 | `GET` | `/api/v1/tenants/:id` | Bearer JWT | `ADMIN` | Mengambil Detail Tenant Berdasarkan ID |
+| 35 | `PATCH` | `/api/v1/tenants/:id` | Bearer JWT | `ADMIN` | Mengubah Data Tenant Secara Parsial |
+| 36 | `POST` | `/api/v1/outlets/:id/payment-methods` | Bearer JWT | `ADMIN` | Menambah Payment Method ke Outlet |
+| 37 | `GET` | `/api/v1/outlets/:id/payment-methods` | Bearer JWT | `ADMIN, STAFF` | Daftar Payment Method Outlet |
+| 38 | `GET` | `/api/v1/outlets/:id/payment-methods/:pm_id` | Bearer JWT | `ADMIN, STAFF` | Detail Payment Method Outlet |
+| 39 | `PATCH` | `/api/v1/outlets/:id/payment-methods/:pm_id` | Bearer JWT | `ADMIN` | Mengubah Payment Method Outlet |
+| 40 | `DELETE` | `/api/v1/outlets/:id/payment-methods/:pm_id` | Bearer JWT | `ADMIN` | Menghapus Payment Method Outlet |
+| 41 | `GET` | `/api/v1/outlets/:id/users` | Bearer JWT | `ADMIN` | Daftar User di Outlet |
+| 42 | `POST` | `/api/v1/outlets/:id/users` | Bearer JWT | `ADMIN` | Assign User ke Outlet |
+| 43 | `DELETE` | `/api/v1/outlets/:id/users/:user_id` | Bearer JWT | `ADMIN` | Unassign User dari Outlet |
 
 ---
 
@@ -285,7 +300,7 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 
 ### GET /api/v1/service-categories
 - **Auth Required**: Yes (`Bearer <token>`)
-- **Role Requirement**: `ADMIN`
+- **Role Requirement**: `ADMIN, STAFF`
 - **Pagination / Search**: No (Mengambil semua kategori milik tenant urut `created_at DESC`).
 - **Response** (`200 OK`):
   ```json
@@ -309,7 +324,7 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 
 ### GET /api/v1/service-categories/:id
 - **Auth Required**: Yes (`Bearer <token>`)
-- **Role Requirement**: `ADMIN`
+- **Role Requirement**: `ADMIN, STAFF`
 - **Path Parameters**: `id` (UUID)
 - **Response** (`200 OK`): Single `ServiceCategoryResponse`.
 - **Errors**: `400 Bad Request` (`"invalid service id"`), `404 Not Found` (`"service category not found"`).
@@ -419,7 +434,7 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 
 ### GET /api/v1/services
 - **Auth Required**: Yes (`Bearer <token>`)
-- **Role Requirement**: `ADMIN`
+- **Role Requirement**: `ADMIN, STAFF`
 - **Query Parameters**:
   - `search` (string, opsional): prefix search nama layanan (`name ILIKE search + "%"`).
   - `category_id` (UUID, opsional): filter berdasarkan ID kategori layanan.
@@ -464,7 +479,7 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 
 ### GET /api/v1/services/:id
 - **Auth Required**: Yes (`Bearer <token>`)
-- **Role Requirement**: `ADMIN`
+- **Role Requirement**: `ADMIN, STAFF`
 - **Path Parameters**: `id` (UUID)
 - **Response** (`200 OK`): Single `ServiceResponse` object.
 - **Errors**: `400 Bad Request` (`"invalid service id"`), `404 Not Found` (`"service not found"`).
@@ -556,7 +571,7 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 
 ### GET /api/v1/discounts
 - **Auth Required**: Yes (`Bearer <token>`)
-- **Role Requirement**: `ADMIN`
+- **Role Requirement**: `ADMIN, STAFF`
 - **Query Parameters**:
   - `search` (string, opsional): prefix search nama diskon.
   - `page` (int, opsional, default: `1`).
@@ -594,7 +609,7 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
 
 ### GET /api/v1/discounts/:id
 - **Auth Required**: Yes (`Bearer <token>`)
-- **Role Requirement**: `ADMIN`
+- **Role Requirement**: `ADMIN, STAFF`
 - **Path Parameters**: `id` (UUID)
 - **Response** (`200 OK`): Single `DiscountResponse` object.
 - **Errors**: `400 Bad Request` (`"invalid discount id"`), `404 Not Found` (`"discount not found"`).
@@ -767,3 +782,147 @@ Semua endpoint API (kecuali root `/`) berada di bawah base path `/api/v1`.
   }
   ```
 - **Errors**: `400 Bad Request`, `404 Not Found`, `409 Conflict` (hapus akun sendiri).
+
+---
+
+## 8. Customer Module
+
+### POST /api/v1/customers
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN, STAFF`
+- **Request Body**:
+  ```json
+  {
+    "name": "Siti Rahma",
+    "phone": "081234567891",
+    "address": "Jl. Mawar No. 5, Jakarta"
+  }
+  ```
+- **Validation Rules**:
+  - `name`: required, min 3, max 150
+  - `phone`: required, format nomor HP Indonesia (`id_phone`)
+  - `address`: opsional, max 500
+- **Response** (`201 Created`): Single `CustomerResponse` object.
+
+---
+
+### GET /api/v1/customers
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN, STAFF`
+- **Query Parameters**: `search`, `page`, `limit`
+- **Response** (`200 OK`): Paginated list of customers.
+
+---
+
+### GET /api/v1/customers/:id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN, STAFF`
+- **Path Parameters**: `id` (UUID)
+- **Response** (`200 OK`): Single `CustomerResponse` object.
+
+---
+
+### PATCH /api/v1/customers/:id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN, STAFF`
+- **Path Parameters**: `id` (UUID)
+- **Request Body**: Partial fields (`name`, `phone`, `address`).
+- **Response** (`200 OK`): Updated `CustomerResponse` object.
+
+---
+
+### DELETE /api/v1/customers/:id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN, STAFF`
+- **Path Parameters**: `id` (UUID)
+- **Response** (`200 OK`): Success message.
+
+---
+
+## 9. Tenant Module
+
+### GET /api/v1/tenants/:id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (UUID)
+- **Response** (`200 OK`): Tenant detail response.
+
+---
+
+### PATCH /api/v1/tenants/:id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (UUID)
+- **Request Body**: `name`, `slug` (opsional)
+- **Response** (`200 OK`): Updated tenant response.
+
+---
+
+## 10. Outlet Payment Methods Module
+
+### POST /api/v1/outlets/:id/payment-methods
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (Outlet UUID)
+- **Request Body**: Payment method details.
+- **Response** (`201 Created`): Created payment method response.
+
+---
+
+### GET /api/v1/outlets/:id/payment-methods
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN, STAFF`
+- **Path Parameters**: `id` (Outlet UUID)
+- **Response** (`200 OK`): List of payment methods for the outlet.
+
+---
+
+### GET /api/v1/outlets/:id/payment-methods/:payment_method_id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN, STAFF`
+- **Path Parameters**: `id` (Outlet UUID), `payment_method_id` (UUID)
+- **Response** (`200 OK`): Single payment method detail.
+
+---
+
+### PATCH /api/v1/outlets/:id/payment-methods/:payment_method_id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (Outlet UUID), `payment_method_id` (UUID)
+- **Request Body**: Partial update fields.
+- **Response** (`200 OK`): Updated payment method response.
+
+---
+
+### DELETE /api/v1/outlets/:id/payment-methods/:payment_method_id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (Outlet UUID), `payment_method_id` (UUID)
+- **Response** (`200 OK`): Success message.
+
+---
+
+## 11. Outlet Users Module
+
+### GET /api/v1/outlets/:id/users
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (Outlet UUID)
+- **Response** (`200 OK`): List of users assigned to the outlet.
+
+---
+
+### POST /api/v1/outlets/:id/users
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (Outlet UUID)
+- **Request Body**: User assignment details (e.g. `user_id`).
+- **Response** (`201 Created`): Assignment success response.
+
+---
+
+### DELETE /api/v1/outlets/:id/users/:user_id
+- **Auth Required**: Yes (`Bearer <token>`)
+- **Role Requirement**: `ADMIN`
+- **Path Parameters**: `id` (Outlet UUID), `user_id` (User UUID)
+- **Response** (`200 OK`): Unassignment success response.
