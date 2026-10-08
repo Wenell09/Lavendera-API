@@ -11,6 +11,7 @@ import (
 func RequireRole(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, ok := appcontext.RoleFromContext(c.Request.Context())
+		println("Role from context:", role)
 		if !ok || role == "" {
 			c.AbortWithStatusJSON(
 				http.StatusForbidden,

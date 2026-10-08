@@ -5,11 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(router *gin.RouterGroup, controller controller.OutletPaymentMethodController) {
-	outletPaymentMethods := router.Group("/outlets/:id/payment-methods")
-	outletPaymentMethods.POST("", controller.Create)
-	outletPaymentMethods.GET("", controller.FindAll)
-	outletPaymentMethods.GET("/:payment_method_id", controller.FindByID)
-	outletPaymentMethods.PATCH("/:payment_method_id", controller.Update)
-	outletPaymentMethods.DELETE("/:payment_method_id", controller.Delete)
+func RegisterRoutes(adminRouter *gin.RouterGroup, staffRouter *gin.RouterGroup, controller controller.OutletPaymentMethodController) {
+	adminOutletPaymentMethods := adminRouter.Group("/outlets/:id/payment-methods")
+	adminOutletPaymentMethods.POST("", controller.Create)
+	adminOutletPaymentMethods.PATCH("/:payment_method_id", controller.Update)
+	adminOutletPaymentMethods.DELETE("/:payment_method_id", controller.Delete)
+
+	staffOutletPaymentMethods := staffRouter.Group("/outlets/:id/payment-methods")
+	staffOutletPaymentMethods.GET("", controller.FindAll)
+	staffOutletPaymentMethods.GET("/:payment_method_id", controller.FindByID)
 }

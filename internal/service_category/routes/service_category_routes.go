@@ -5,11 +5,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(router *gin.RouterGroup, controller controller.ServiceCategoryController) {
-	serviceCategory := router.Group("/service-categories")
-	serviceCategory.GET("", controller.FindAll)
-	serviceCategory.GET("/:id", controller.FindByID)
-	serviceCategory.POST("", controller.Create)
-	serviceCategory.PATCH("/:id", controller.Update)
-	serviceCategory.DELETE("/:id", controller.Delete)
+func RegisterRoutes(adminRouter *gin.RouterGroup, staffRouter *gin.RouterGroup, controller controller.ServiceCategoryController) {
+	adminServiceCategory := adminRouter.Group("/service-categories")
+	adminServiceCategory.POST("", controller.Create)
+	adminServiceCategory.PATCH("/:id", controller.Update)
+	adminServiceCategory.DELETE("/:id", controller.Delete)
+
+	staffServiceCategory := staffRouter.Group("/service-categories")
+	staffServiceCategory.GET("", controller.FindAll)
+	staffServiceCategory.GET("/:id", controller.FindByID)
+
 }

@@ -15,14 +15,14 @@ import (
 	outletPaymentMethodRoutes "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/routes"
 	outletUserController "github.com/Wenell09/lavendera-api/internal/outlet_user/controller"
 	outletUserRoutes "github.com/Wenell09/lavendera-api/internal/outlet_user/routes"
-	tenantController "github.com/Wenell09/lavendera-api/internal/tenant/controller"
-	tenantRoutes "github.com/Wenell09/lavendera-api/internal/tenant/routes"
 	serviceController "github.com/Wenell09/lavendera-api/internal/service/controller"
 	serviceRoutes "github.com/Wenell09/lavendera-api/internal/service/routes"
 	serviceCategoryController "github.com/Wenell09/lavendera-api/internal/service_category/controller"
 	serviceCategoryRoutes "github.com/Wenell09/lavendera-api/internal/service_category/routes"
 	"github.com/Wenell09/lavendera-api/internal/shared/config"
 	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
+	tenantController "github.com/Wenell09/lavendera-api/internal/tenant/controller"
+	tenantRoutes "github.com/Wenell09/lavendera-api/internal/tenant/routes"
 	userController "github.com/Wenell09/lavendera-api/internal/user/controller"
 	userRoutes "github.com/Wenell09/lavendera-api/internal/user/routes"
 	"github.com/gin-gonic/gin"
@@ -63,15 +63,17 @@ func NewRouter(
 	// Route khusus admin
 	adminGroup := protectedGroup.Group("")
 	adminGroup.Use(middleware.RequireRole("ADMIN"))
+	// route khusus admin + staff
+	staffGroup := protectedGroup.Group("")
+	staffGroup.Use(middleware.RequireRole("ADMIN", "STAFF"))
 	OutletRoutes.RegisterRoutes(adminGroup, outletController)
-	serviceCategoryRoutes.RegisterRoutes(adminGroup, serviceCategoryController)
-	serviceRoutes.RegisterRoutes(adminGroup, serviceController)
-	discountRoutes.RegisterRoutes(adminGroup, discountController)
-	customerRoutes.RegisterRoutes(adminGroup, customerController)
+	serviceCategoryRoutes.RegisterRoutes(adminGroup, staffGroup, serviceCategoryController)
+	serviceRoutes.RegisterRoutes(adminGroup, staffGroup, serviceController)
+	discountRoutes.RegisterRoutes(adminGroup, staffGroup, discountController)
+	customerRoutes.RegisterRoutes(adminGroup, staffGroup, customerController)
 	userRoutes.RegisterRoutes(adminGroup, userController)
 	outletUserRoutes.RegisterRoutes(adminGroup, outletUserController)
-	outletPaymentMethodRoutes.RegisterRoutes(adminGroup, outletPaymentMethodController)
+	outletPaymentMethodRoutes.RegisterRoutes(adminGroup, staffGroup, outletPaymentMethodController)
 	tenantRoutes.RegisterRoutes(adminGroup, tenantController)
-	// route khusus staff
 	return r
 }
