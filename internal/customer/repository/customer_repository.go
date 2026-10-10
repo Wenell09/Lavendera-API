@@ -11,6 +11,7 @@ import (
 type CustomerRepository interface {
 	FindAll(ctx context.Context, filter dto.CustomerFilter) ([]models.Customer, int64, error)
 	FindByID(ctx context.Context, id uuid.UUID) (*models.Customer, error)
+	FindByNameAndPhone(ctx context.Context, tenantID uuid.UUID, name string, phone string) (*models.Customer, error)
 	Create(ctx context.Context, customer *models.Customer) error
 	Update(ctx context.Context, id uuid.UUID, customer map[string]interface{}) error
 	ExistsByName(ctx context.Context, name string) (bool, error)

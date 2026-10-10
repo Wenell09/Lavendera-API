@@ -11,6 +11,7 @@ import (
 type OutletRepository interface {
 	FindAll(ctx context.Context, filter dto.OutletFilter) ([]models.Outlet, int64, error)
 	FindByID(ctx context.Context, id uuid.UUID) (*models.Outlet, error)
+	FindBySlugPublic(ctx context.Context, slug string) (*models.Outlet, error)
 	ExistsByName(ctx context.Context, name string) (bool, error)
 	Create(ctx context.Context, outlet *models.Outlet) error
 	Update(ctx context.Context, id uuid.UUID, outlet map[string]interface{}) error

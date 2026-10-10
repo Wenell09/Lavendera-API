@@ -61,6 +61,17 @@ func (c *CustomerRepositoryImpl) FindByID(ctx context.Context, id uuid.UUID) (*m
 	return customer, nil
 }
 
+// FindByNameAndPhone implements [CustomerRepository].
+func (c *CustomerRepositoryImpl) FindByNameAndPhone(ctx context.Context, tenantID uuid.UUID, name string, phone string) (*models.Customer, error) {
+	customer := &models.Customer{}
+	if err := c.DB.WithContext(ctx).
+		Where("tenant_id = ? AND LOWER(name) = LOWER(?) AND phone = ?", tenantID, name, phone).
+		First(customer).Error; err != nil {
+		return nil, err
+	}
+	return customer, nil
+}
+
 // ExistsByName implements [CustomerRepository].
 func (c *CustomerRepositoryImpl) ExistsByName(ctx context.Context, name string) (bool, error) {
 	var count int64

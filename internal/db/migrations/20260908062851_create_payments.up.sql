@@ -5,7 +5,7 @@ CREATE TABLE payments (
     received_by UUID REFERENCES users(id) ON DELETE SET NULL,
     amount BIGINT NOT NULL DEFAULT 0,
     payment_method VARCHAR(50) NOT NULL CHECK (payment_method IN ('cash', 'qris', 'bank_transfer')),
-    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'rejected')),
+    status VARCHAR(20) NOT NULL DEFAULT 'unpaid' CHECK (status IN ('unpaid','pending', 'verified', 'rejected')),
     reference_number VARCHAR(100),
     notes TEXT,
     paid_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

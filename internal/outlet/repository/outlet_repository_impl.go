@@ -68,6 +68,15 @@ func (o *OutletRepositoryImpl) FindByID(ctx context.Context, id uuid.UUID) (*mod
 	return outlet, nil
 }
 
+// FindBySlugPublic implements [OutletRepository] (unscoped by tenant).
+func (o *OutletRepositoryImpl) FindBySlugPublic(ctx context.Context, slug string) (*models.Outlet, error) {
+	outlet := &models.Outlet{}
+	if err := o.DB.WithContext(ctx).Where("slug = ?", slug).First(outlet).Error; err != nil {
+		return nil, err
+	}
+	return outlet, nil
+}
+
 // Update implements [OutletRepository].
 func (o *OutletRepositoryImpl) Update(ctx context.Context, id uuid.UUID, outlet map[string]interface{}) error {
 	if len(outlet) == 0 {

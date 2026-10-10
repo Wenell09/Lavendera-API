@@ -21,7 +21,7 @@ type Order struct {
 	Total          int64
 	PaidAmount     int64
 	Notes          *string
-	EstimatedDone  *time.Time
+	EstimatedDone  time.Time
 	CompletedAt    *time.Time
 	CanceledAt     *time.Time
 	CreatedAt      time.Time
