@@ -704,7 +704,12 @@ func (s *OrderServiceImpl) processOrderItems(ctx context.Context, items []dto.Cr
 			}
 		}
 
-		if service.MinQuantity > 0 && item.Quantity < float64(service.MinQuantity) {
+		checkQty := item.Quantity
+		if strings.ToLower(service.Unit) == "gram" {
+			checkQty = item.Quantity * 1000
+		}
+
+		if service.MinQuantity > 0 && checkQty < float64(service.MinQuantity) {
 			return nil, 0, 0, apperror.ValidationError{
 				Msg: fmt.Sprintf("quantity for service '%s' must be at least %d %s", service.Name, service.MinQuantity, service.Unit),
 			}

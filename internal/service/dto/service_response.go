@@ -13,10 +13,10 @@ type CategoryResponse struct {
 
 type ServiceResponse struct {
 	ID           uuid.UUID `json:"id"`
-	Category     CategoryResponse
 	Name         string    `json:"name"`
+	Category     CategoryResponse
 	Price        int64     `json:"price"`
-	MinQuantity  int64     `json:"min_quantity"`
+	MinQuantity  float64   `json:"min_quantity"`
 	Unit         string    `json:"unit"`
 	DurationDays int64     `json:"duration_days"`
 	IsActive     bool      `json:"is_active"`

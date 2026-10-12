@@ -43,12 +43,16 @@ func (s *ServiceImpl) Create(ctx context.Context, req dto.CreateServiceRequest) 
 	if exists {
 		return nil, apperror.ConflictError{Msg: "service name already exists"}
 	}
+	if strings.EqualFold(req.Unit, "kg") {
+		req.Unit = "gram"
+		req.MinQuantity *= 1000
+	}
 	service := &models.Service{
 		TenantID:     tenantID,
 		CategoryID:   req.CategoryID,
 		Name:         req.Name,
 		Price:        req.Price,
-		MinQuantity:  req.MinQuantity,
+		MinQuantity:  int64(req.MinQuantity),
 		Unit:         req.Unit,
 		DurationDays: req.DurationDays,
 		IsActive:     req.IsActive,
@@ -66,6 +70,15 @@ func (s *ServiceImpl) Create(ctx context.Context, req dto.CreateServiceRequest) 
 		return nil, err
 	}
 	logger.WithField("service_id", service.ID).WithField("category_id", service.CategoryID).Info("service created successfully")
+	var finalUnit string
+	var minQuantity float64
+	if service.Unit == "gram" {
+		finalUnit = "kg"
+		minQuantity = float64(service.MinQuantity) / 1000
+	} else {
+		finalUnit = service.Unit
+		minQuantity = float64(service.MinQuantity)
+	}
 	return &dto.ServiceResponse{
 		ID: createdService.ID,
 		Category: dto.CategoryResponse{
@@ -74,8 +87,8 @@ func (s *ServiceImpl) Create(ctx context.Context, req dto.CreateServiceRequest) 
 		},
 		Name:         createdService.Name,
 		Price:        createdService.Price,
-		MinQuantity:  createdService.MinQuantity,
-		Unit:         createdService.Unit,
+		MinQuantity:  minQuantity,
+		Unit:         finalUnit,
 		DurationDays: createdService.DurationDays,
 		IsActive:     createdService.IsActive,
 		CreatedAt:    createdService.CreatedAt,
@@ -98,6 +111,15 @@ func (s *ServiceImpl) FindAll(ctx context.Context, filter dto.ServiceFilter) (*d
 	}
 	data := []dto.ServiceResponse{}
 	for _, service := range services {
+		var finalUnit string
+		var minQuantity float64
+		if service.Unit == "gram" {
+			finalUnit = "kg"
+			minQuantity = float64(service.MinQuantity) / 1000
+		} else {
+			finalUnit = service.Unit
+			minQuantity = float64(service.MinQuantity)
+		}
 		data = append(data, dto.ServiceResponse{
 			ID: service.ID,
 			Category: dto.CategoryResponse{
@@ -106,8 +128,8 @@ func (s *ServiceImpl) FindAll(ctx context.Context, filter dto.ServiceFilter) (*d
 			},
 			Name:         service.Name,
 			Price:        service.Price,
-			MinQuantity:  service.MinQuantity,
-			Unit:         service.Unit,
+			MinQuantity:  minQuantity,
+			Unit:         finalUnit,
 			DurationDays: service.DurationDays,
 			IsActive:     service.IsActive,
 			CreatedAt:    service.CreatedAt,
@@ -137,6 +159,15 @@ func (s *ServiceImpl) FindByID(ctx context.Context, id uuid.UUID) (*dto.ServiceR
 		logger.WithError(err).Error("failed to find service by id")
 		return nil, err
 	}
+	var minQuantity float64
+	var finalUnit string
+	if service.Unit == "gram" {
+		finalUnit = "kg"
+		minQuantity = float64(service.MinQuantity) / 1000
+	} else {
+		finalUnit = service.Unit
+		minQuantity = float64(service.MinQuantity)
+	}
 	return &dto.ServiceResponse{
 		ID: service.ID,
 		Category: dto.CategoryResponse{
@@ -145,8 +176,8 @@ func (s *ServiceImpl) FindByID(ctx context.Context, id uuid.UUID) (*dto.ServiceR
 		},
 		Name:         service.Name,
 		Price:        service.Price,
-		MinQuantity:  service.MinQuantity,
-		Unit:         service.Unit,
+		MinQuantity:  minQuantity,
+		Unit:         finalUnit,
 		DurationDays: service.DurationDays,
 		IsActive:     service.IsActive,
 		CreatedAt:    service.CreatedAt,
@@ -193,6 +224,14 @@ func (s *ServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSe
 	if req.CategoryID != nil {
 		updateData["category_id"] = *req.CategoryID
 	}
+	if req.Unit != nil && strings.EqualFold(*req.Unit, "kg") {
+		gramUnit := "gram"
+		req.Unit = &gramUnit
+		if req.MinQuantity != nil {
+			val := *req.MinQuantity * 1000
+			req.MinQuantity = &val
+		}
+	}
 	if req.Price != nil {
 		updateData["price"] = *req.Price
 	}
@@ -217,7 +256,7 @@ func (s *ServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSe
 			},
 			Name:         service.Name,
 			Price:        service.Price,
-			MinQuantity:  service.MinQuantity,
+			MinQuantity:  float64(service.MinQuantity),
 			Unit:         service.Unit,
 			DurationDays: service.DurationDays,
 			IsActive:     service.IsActive,
@@ -246,7 +285,7 @@ func (s *ServiceImpl) Update(ctx context.Context, id uuid.UUID, req dto.UpdateSe
 		},
 		Name:         updatedService.Name,
 		Price:        updatedService.Price,
-		MinQuantity:  updatedService.MinQuantity,
+		MinQuantity:  float64(updatedService.MinQuantity),
 		Unit:         updatedService.Unit,
 		DurationDays: updatedService.DurationDays,
 		IsActive:     updatedService.IsActive,
