@@ -30,7 +30,7 @@ type Order struct {
 	Outlet         Outlet
 	Customer       Customer
 	Discount       *Discount
-	Creator        *User `gorm:"foreignKey:CreatedBy"`
-	Items          []OrderItem
-	Payments       []Payment
+	Creator        *User `json:"creator,omitempty" gorm:"foreignKey:CreatedBy"`
+	Payment        *Payment `json:"payment,omitempty" gorm:"foreignKey:OrderID"`
+	Items          []OrderItem `json:"items,omitempty"`
 }

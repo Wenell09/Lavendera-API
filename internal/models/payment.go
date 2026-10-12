@@ -14,13 +14,12 @@ type Payment struct {
 	Amount          int64
 	PaymentMethod   string
 	Status          string
-	ReferenceNumber *string
+	ReferenceNumber string
 	Notes           *string
 	PaidAt          *time.Time
 	VerifiedAt      *time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	Outlet          Outlet
-	Order           Order
 	Receiver        *User `gorm:"foreignKey:ReceivedBy"`
 }

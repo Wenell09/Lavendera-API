@@ -20,4 +20,5 @@ type OrderRepository interface {
 	SumVerifiedPaymentsByOrderID(ctx context.Context, orderID uuid.UUID) (int64, error)
 	UpdatePaymentAndOrderPaidAmount(ctx context.Context, paymentID uuid.UUID, paymentUpdates map[string]interface{}, orderID uuid.UUID, newPaidAmount int64) error
 	CancelOrderWithPayments(ctx context.Context, orderID uuid.UUID, orderUpdates map[string]interface{}, paymentUpdates map[string]interface{}) error
+	UserExists(ctx context.Context, userID uuid.UUID) (bool, error)
 }

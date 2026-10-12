@@ -84,7 +84,7 @@ type OrderResponse struct {
 	Discount       *DiscountSummary    `json:"discount,omitempty"`
 	Creator        *UserSummary        `json:"creator,omitempty"`
 	Items          []OrderItemResponse `json:"items,omitempty"`
-	Payments       []PaymentResponse   `json:"payments"`
+	Payment        *PaymentResponse    `json:"payment,omitempty"`
 	Notes          *string             `json:"notes,omitempty"`
 	EstimatedDone  time.Time           `json:"estimated_done"`
 	CompletedAt    *time.Time          `json:"completed_at,omitempty"`

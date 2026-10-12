@@ -226,3 +226,35 @@ func (c *OrderControllerImpl) ConfirmPayment(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "payment confirmed successfully", result, response.ResponseMeta{}))
 }
+
+// InputCashPayment implements [OrderController].
+func (c *OrderControllerImpl) InputCashPayment(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		apperror.NewHandleError(ctx, apperror.ValidationError{Msg: "invalid order id"})
+		return
+	}
+
+	var request dto.UpdateOrderPaidAmountRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		apperror.NewHandleError(ctx, apperror.ValidationError{Msg: "invalid request body"})
+		return
+	}
+
+	if err := c.Validator.Struct(request); err != nil {
+		if ve, ok := err.(validator.ValidationErrors); ok {
+			apperror.NewHandleError(ctx, apperror.NewFieldError(ve))
+			return
+		}
+		apperror.NewHandleError(ctx, err)
+		return
+	}
+
+	result, err := c.Service.InputCashPayment(ctx.Request.Context(), id, request)
+	if err != nil {
+		apperror.NewHandleError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "cash payment input successfully", result, response.ResponseMeta{}))
+}

@@ -11,4 +11,5 @@ type OrderController interface {
 	UpdateStatus(ctx *gin.Context)
 	CancelOrder(ctx *gin.Context)
 	ConfirmPayment(ctx *gin.Context)
+	InputCashPayment(ctx *gin.Context)
 }

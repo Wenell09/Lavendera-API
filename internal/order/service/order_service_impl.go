@@ -117,11 +117,14 @@ func (s *OrderServiceImpl) CreateCashierOrder(ctx context.Context, req dto.Creat
 	// 6. Creator ID (from JWT)
 	var createdBy *uuid.UUID
 	if uid, ok := appcontext.UserIDFromContext(ctx); ok && uid != uuid.Nil {
-		createdBy = &uid
+		exists, _ := s.Repository.UserExists(ctx, uid)
+		if exists {
+			createdBy = &uid
+		}
 	}
 
 	// 7. Status
-	status := "MENUNGGU_KONFIRMASI"
+	status := "DIPROSES"
 	if req.Status != "" {
 		status = req.Status
 	}
@@ -162,7 +165,7 @@ func (s *OrderServiceImpl) CreateCashierOrder(ctx context.Context, req dto.Creat
 			Amount:          paymentAmount,
 			PaymentMethod:   method,
 			Status:          "verified",
-			ReferenceNumber: &refNum,
+			ReferenceNumber: refNum,
 			PaidAt:          &now,
 			VerifiedAt:      &now,
 		}
@@ -303,37 +306,39 @@ func (s *OrderServiceImpl) CreatePublicOrder(ctx context.Context, req dto.Create
 	var paidAmount int64 = 0
 	var payment *models.Payment
 
-if req.PaymentMethod != "" && strings.TrimSpace(req.PaymentMethod) != "" {
-	method := strings.ToLower(strings.TrimSpace(req.PaymentMethod))
-	refNum, err := GenerateReferenceNumber()
-	if err != nil {
-		logger.WithError(err).Error("failed to generate payment reference number")
-		return nil, err
-	}
-	var paymentAmount int64
-	if method == "cash" {
-		if *req.PaidAmount < total {
-			return nil, apperror.ValidationError{Msg: "paid_amount must be greater than or equal to total price for cash payment"}
+	if req.PaymentMethod != "" && strings.TrimSpace(req.PaymentMethod) != "" {
+		method := strings.ToLower(strings.TrimSpace(req.PaymentMethod))
+		refNum, err := GenerateReferenceNumber()
+		if err != nil {
+			logger.WithError(err).Error("failed to generate payment reference number")
+			return nil, err
 		}
-		paymentAmount = *req.PaidAmount
-	} else {
-		paymentAmount = total
-	}
-	// keep order paid_amount zero until verification
+		var paymentAmount int64
+		if method == "cash" {
+			if req.PaidAmount != nil && *req.PaidAmount != 0 && *req.PaidAmount < total {
+				return nil, apperror.ValidationError{Msg: "paid_amount must be greater than or equal to total price for cash payment"}
+			}
+			if req.PaidAmount != nil {
+				paymentAmount = *req.PaidAmount
+			} else {
+				paymentAmount = total
+			}
+		} else {
+			paymentAmount = total
+		}
+		// keep order paid_amount zero until verification
 
-	now := time.Now()
-	payment = &models.Payment{
-		ID:              uuid.New(),
-		OutletID:        outlet.ID,
-		OrderID:         orderID,
-		ReceivedBy:      nil,
-		Amount:          paymentAmount,
-		PaymentMethod:   method,
-		Status:          "pending",
-		ReferenceNumber: &refNum,
-		PaidAt:          &now,
+		payment = &models.Payment{
+			ID:              uuid.New(),
+			OutletID:        outlet.ID,
+			OrderID:         orderID,
+			ReceivedBy:      nil,
+			Amount:          paymentAmount,
+			PaymentMethod:   method,
+			Status:          "pending",
+			ReferenceNumber: refNum,
+		}
 	}
-}
 
 	order := &models.Order{
 		ID:             orderID,
@@ -600,6 +605,67 @@ func (s *OrderServiceImpl) ConfirmPayment(ctx context.Context, orderID uuid.UUID
 	return s.mapOrderToResponse(updatedOrder), nil
 }
 
+// InputCashPayment implements [OrderService].
+func (s *OrderServiceImpl) InputCashPayment(ctx context.Context, id uuid.UUID, req dto.UpdateOrderPaidAmountRequest) (*dto.OrderResponse, error) {
+	logger := utils.LogWithContext(s.Logger, ctx).WithFields(logrus.Fields{
+		"order_id":    id,
+		"paid_amount": req.PaidAmount,
+	})
+
+	order, err := s.Repository.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFoundError{Msg: "order not found"}
+		}
+		return nil, err
+	}
+
+	if order.Status == "DIBATALKAN" {
+		return nil, apperror.ValidationError{Msg: "cannot process payment for canceled order"}
+	}
+
+	if order.Payment == nil || order.Payment.Status != "pending" || order.Payment.PaymentMethod != "cash" {
+		return nil, apperror.NotFoundError{Msg: "no pending cash payment found for this order"}
+	}
+	pendingPayment := order.Payment
+
+	if req.PaidAmount < order.Total {
+		return nil, apperror.ValidationError{Msg: "paid_amount must be greater than or equal to total price"}
+	}
+
+	now := time.Now()
+	paymentUpdates := map[string]interface{}{
+		"status":      "verified",
+		"verified_at": &now,
+		"paid_at":     &now,
+		"amount":      req.PaidAmount,
+	}
+	if uid, ok := appcontext.UserIDFromContext(ctx); ok && uid != uuid.Nil {
+		paymentUpdates["received_by"] = &uid
+	}
+
+	if err := s.Repository.UpdatePaymentAndOrderPaidAmount(ctx, pendingPayment.ID, paymentUpdates, order.ID, req.PaidAmount); err != nil {
+		logger.WithError(err).Error("failed to input cash payment")
+		return nil, err
+	}
+
+	// Also update status to DIPROSES if it was MENUNGGU_KONFIRMASI
+	if order.Status == "MENUNGGU_KONFIRMASI" {
+		if err := s.Repository.Update(ctx, order.ID, map[string]interface{}{"status": "DIPROSES"}); err != nil {
+			logger.WithError(err).Error("failed to update order status to DIPROSES")
+			// continue as payment is already recorded
+		}
+	}
+
+	updatedOrder, err := s.Repository.FindByID(ctx, order.ID)
+	if err != nil {
+		logger.WithError(err).Error("failed to reload order after cash payment")
+		return nil, err
+	}
+
+	return s.mapOrderToResponse(updatedOrder), nil
+}
+
 // processOrderItems processes items, verifies services directly from system,
 // validates uniqueness of services in the item list, and calculates pricing:
 // - kiloan (unit "gram"): subtotal = round(unitPrice * (quantity / 1000.0))
@@ -772,7 +838,6 @@ func (s *OrderServiceImpl) mapOrderToResponse(order *models.Order) *dto.OrderRes
 		TotalAmount:    totalNonNegative(order.Total),
 		PaidAmount:     order.PaidAmount,
 		ChangeAmount:   changeAmount,
-		Payments:       []dto.PaymentResponse{},
 		Notes:          order.Notes,
 		EstimatedDone:  order.EstimatedDone,
 		CompletedAt:    order.CompletedAt,
@@ -856,23 +921,23 @@ func (s *OrderServiceImpl) mapOrderToResponse(order *models.Order) *dto.OrderRes
 		resp.Items = items
 	}
 
-	if len(order.Payments) > 0 {
-		payments := make([]dto.PaymentResponse, len(order.Payments))
-		for i, p := range order.Payments {
-			payments[i] = dto.PaymentResponse{
-				ID:              p.ID,
-				Amount:          p.Amount,
-				PaymentMethod:   p.PaymentMethod,
-				Status:          p.Status,
-				ReferenceNumber: p.ReferenceNumber,
-				Notes:           p.Notes,
-				PaidAt:          p.PaidAt,
-				VerifiedAt:      p.VerifiedAt,
-				CreatedAt:       p.CreatedAt,
-				UpdatedAt:       p.UpdatedAt,
-			}
+	if order.Payment != nil && order.Payment.ID != uuid.Nil {
+		var refNum *string
+		if order.Payment.ReferenceNumber != "" {
+			refNum = &order.Payment.ReferenceNumber
 		}
-		resp.Payments = payments
+		resp.Payment = &dto.PaymentResponse{
+			ID:              order.Payment.ID,
+			Amount:          order.Payment.Amount,
+			PaymentMethod:   order.Payment.PaymentMethod,
+			Status:          order.Payment.Status,
+			ReferenceNumber: refNum,
+			Notes:           order.Payment.Notes,
+			PaidAt:          order.Payment.PaidAt,
+			VerifiedAt:      order.Payment.VerifiedAt,
+			CreatedAt:       order.Payment.CreatedAt,
+			UpdatedAt:       order.Payment.UpdatedAt,
+		}
 	}
 
 	return resp

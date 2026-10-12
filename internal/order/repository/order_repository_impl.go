@@ -48,7 +48,7 @@ func (r *OrderRepositoryImpl) FindAll(ctx context.Context, filter dto.OrderFilte
 		Preload("Items").
 		Preload("Items.Service").
 		Preload("Items.Service.Category").
-		Preload("Payments")
+		Preload("Payment")
 
 	if filter.Search != "" {
 		query = query.Where("order_number ILIKE ? OR tracking_token ILIKE ?", filter.Search+"%", filter.Search+"%")
@@ -93,7 +93,7 @@ func (r *OrderRepositoryImpl) FindByID(ctx context.Context, id uuid.UUID) (*mode
 		Preload("Items").
 		Preload("Items.Service").
 		Preload("Items.Service.Category").
-		Preload("Payments").
+		Preload("Payment").
 		First(order, id).Error; err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (r *OrderRepositoryImpl) FindByTrackingToken(ctx context.Context, trackingT
 		Preload("Items").
 		Preload("Items.Service").
 		Preload("Items.Service.Category").
-		Preload("Payments").
+		Preload("Payment").
 		Where("tracking_token = ?", trackingToken).
 		First(order).Error; err != nil {
 		return nil, err
@@ -207,5 +207,14 @@ func (r *OrderRepositoryImpl) CancelOrderWithPayments(ctx context.Context, order
 		}
 		return nil
 	})
+}
+
+// UserExists checks if a user exists in the database.
+func (r *OrderRepositoryImpl) UserExists(ctx context.Context, userID uuid.UUID) (bool, error) {
+	var count int64
+	if err := r.DB.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 

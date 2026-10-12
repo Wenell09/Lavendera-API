@@ -35,3 +35,7 @@ type CreatePublicOrderRequest struct {
 type UpdateOrderStatusRequest struct {
 	Status string `json:"status" validate:"required,oneof=MENUNGGU_KONFIRMASI DIPROSES SELESAI DIAMBIL"`
 }
+
+type UpdateOrderPaidAmountRequest struct {
+	PaidAmount int64 `json:"paid_amount" validate:"required,gte=0"`
+}

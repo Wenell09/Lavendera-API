@@ -16,4 +16,5 @@ type OrderService interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, req dto.UpdateOrderStatusRequest) (*dto.OrderResponse, error)
 	CancelOrder(ctx context.Context, id uuid.UUID) (*dto.OrderResponse, error)
 	ConfirmPayment(ctx context.Context, orderID uuid.UUID, paymentID uuid.UUID) (*dto.OrderResponse, error)
+	InputCashPayment(ctx context.Context, id uuid.UUID, req dto.UpdateOrderPaidAmountRequest) (*dto.OrderResponse, error)
 }

@@ -18,5 +18,6 @@ func RegisterRoutes(publicRouter *gin.RouterGroup, staffRouter *gin.RouterGroup,
 	staffOrders.PATCH("/:id/status", controller.UpdateStatus)
 	staffOrders.PATCH("/:id/cancel", controller.CancelOrder)
 	staffOrders.PATCH("/:id/payments/:payment_id/confirm", controller.ConfirmPayment)
+	staffOrders.PATCH("/:id/cash-payment", controller.InputCashPayment)
 
 }
