@@ -6,4 +6,5 @@ type OutletUserController interface {
 	Assign(c *gin.Context)
 	Unassign(c *gin.Context)
 	FindByOutletID(c *gin.Context)
+	FindByUserID(c *gin.Context)
 }

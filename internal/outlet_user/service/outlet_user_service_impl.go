@@ -67,6 +67,10 @@ func (s *OutletUserServiceImpl) Assign(ctx context.Context, req dto.CreateOutlet
 		return nil, err
 	}
 
+	if !user.IsActive {
+		return nil, apperror.ValidationError{Msg: "cannot assign inactive user"}
+	}
+
 	exists, err := s.Repo.Exists(ctx, req.OutletID, req.UserID)
 	if err != nil {
 		logger.WithError(err).Error("failed to check outlet_user existence")
@@ -142,6 +146,45 @@ func (s *OutletUserServiceImpl) Unassign(ctx context.Context, outletID, userID u
 
 	logger.Info("user unassigned from outlet successfully")
 	return nil
+}
+
+// FindByUserID implements [OutletUserService].
+func (s *OutletUserServiceImpl) FindByUserID(ctx context.Context, userID uuid.UUID) (*dto.OutletUserResponse, error) {
+	logger := utils.LogWithContext(s.Logger, ctx).WithFields(logrus.Fields{
+		"user_id": userID,
+	})
+	if _, exists := appcontext.TenantIDFromContext(ctx); !exists {
+		return nil, apperror.UnauthorizedError{Msg: "tenant_id not found"}
+	}
+	user, err := s.UserRepo.FindByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFoundError{Msg: "user not found"}
+		}
+		logger.WithError(err).Error("failed to find user")
+		return nil, err
+	}
+
+	userOutlet, err := s.Repo.FindByUserID(ctx, userID)
+	if err != nil {
+		logger.WithError(err).Error("failed to find user outlet")
+		return nil, err
+	}
+	return &dto.OutletUserResponse{
+		Outlet: dto.OutletUserOutletResponse{
+			ID:   userOutlet.Outlet.ID,
+			Name: userOutlet.Outlet.Name,
+			Slug: userOutlet.Outlet.Slug,
+		},
+		User: dto.OutletUserUserResponse{
+			ID:       user.ID,
+			Name:     user.Name,
+			Email:    user.Email,
+			Role:     user.Role,
+			IsActive: user.IsActive,
+		},
+		CreatedAt: userOutlet.CreatedAt,
+	}, nil
 }
 
 func (s *OutletUserServiceImpl) FindByOutletID(ctx context.Context, outletID uuid.UUID, filter dto.OutletUserFilter) (*dto.OutletUserListResponse, error) {

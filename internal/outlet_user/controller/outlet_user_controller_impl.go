@@ -68,6 +68,21 @@ func (u *OutletUserControllerImpl) Unassign(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "user unassigned from outlet successfully", nil, response.ResponseMeta{}))
 }
 
+// FindByUserID implements [OutletUserController].
+func (u *OutletUserControllerImpl) FindByUserID(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		apperror.NewHandleError(c, apperror.ValidationError{Msg: "invalid user id"})
+		return
+	}
+	result, err := u.Service.FindByUserID(c.Request.Context(), userID)
+	if err != nil {
+		apperror.NewHandleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "user outlet retrieved successfully", result, response.ResponseMeta{}))
+}
+
 func (u *OutletUserControllerImpl) FindByOutletID(c *gin.Context) {
 	outletID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -95,4 +110,3 @@ func (u *OutletUserControllerImpl) FindByOutletID(c *gin.Context) {
 		Pagination: result.Pagination,
 	}))
 }
-

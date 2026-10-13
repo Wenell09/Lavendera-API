@@ -5,11 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(router *gin.RouterGroup, controller controller.OutletUserController) {
-	outletUsers := router.Group("/outlets/:id/users")
-	{
-		outletUsers.GET("", controller.FindByOutletID)
-		outletUsers.POST("", controller.Assign)
-		outletUsers.DELETE("/:user_id", controller.Unassign)
-	}
+func RegisterRoutes(adminRouter *gin.RouterGroup, staffRouter *gin.RouterGroup, controller controller.OutletUserController) {
+	adminOutletUsers := adminRouter.Group("/outlets/:id/users")
+	adminOutletUsers.GET("", controller.FindByOutletID)
+	adminOutletUsers.POST("", controller.Assign)
+	adminOutletUsers.DELETE("/:user_id", controller.Unassign)
+	staffOutletUsers := staffRouter.Group("/users/:id/outlets")
+	staffOutletUsers.GET("", controller.FindByUserID)
 }
