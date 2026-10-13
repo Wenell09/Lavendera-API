@@ -144,13 +144,16 @@ func (s *OrderServiceImpl) CreateCashierOrder(ctx context.Context, req dto.Creat
 			logger.WithError(err).Error("failed to generate payment reference number")
 			return nil, err
 		}
-
 		var paymentAmount int64
 		if method == "cash" {
-			if *req.PaidAmount < total {
+			if req.PaidAmount != nil && *req.PaidAmount != 0 && *req.PaidAmount < total {
 				return nil, apperror.ValidationError{Msg: "paid_amount must be greater than or equal to total price for cash payment"}
 			}
-			paymentAmount = *req.PaidAmount
+			if req.PaidAmount != nil {
+				paymentAmount = *req.PaidAmount
+			} else {
+				paymentAmount = total
+			}
 		} else {
 			paymentAmount = total
 		}
@@ -537,7 +540,7 @@ func (s *OrderServiceImpl) CancelOrder(ctx context.Context, id uuid.UUID) (*dto.
 }
 
 // ConfirmPayment implements [OrderService].
-func (s *OrderServiceImpl) ConfirmPayment(ctx context.Context, orderID uuid.UUID, paymentID uuid.UUID) (*dto.OrderResponse, error) {
+func (s *OrderServiceImpl) ConfirmOrderAndPayment(ctx context.Context, orderID uuid.UUID, paymentID uuid.UUID) (*dto.OrderResponse, error) {
 	logger := utils.LogWithContext(s.Logger, ctx).WithFields(logrus.Fields{
 		"order_id":   orderID,
 		"payment_id": paymentID,
@@ -563,10 +566,20 @@ func (s *OrderServiceImpl) ConfirmPayment(ctx context.Context, orderID uuid.UUID
 		return nil, err
 	}
 
+	if order.Status == "DIBATALKAN" {
+		return nil, apperror.ValidationError{Msg: "cannot update status of canceled order"}
+	}
+	updateStatusOrder := map[string]interface{}{
+		"status": "DIPROSES",
+	}
+	if err := s.Repository.Update(ctx, order.ID, updateStatusOrder); err != nil {
+		logger.WithError(err).Error("failed to update order status")
+		return nil, err
+	}
+
 	if payment.OrderID != order.ID {
 		return nil, apperror.NotFoundError{Msg: "payment does not belong to this order"}
 	}
-
 	now := time.Now()
 	paymentUpdates := map[string]interface{}{
 		"status":      "verified",

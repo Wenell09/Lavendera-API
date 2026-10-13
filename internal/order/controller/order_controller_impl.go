@@ -218,7 +218,7 @@ func (c *OrderControllerImpl) ConfirmPayment(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.Service.ConfirmPayment(ctx.Request.Context(), orderID, paymentID)
+	result, err := c.Service.ConfirmOrderAndPayment(ctx.Request.Context(), orderID, paymentID)
 	if err != nil {
 		apperror.NewHandleError(ctx, err)
 		return
