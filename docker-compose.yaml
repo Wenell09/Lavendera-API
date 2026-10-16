@@ -1,0 +1,31 @@
+services:
+  api:
+    build: .
+    container_name: lavendera-API
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: lavendera-postgres
+    environment:
+      POSTGRES_USER: wenell
+      POSTGRES_PASSWORD: wenell
+      POSTGRES_DB: lavendera
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wenell -d lavendera"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

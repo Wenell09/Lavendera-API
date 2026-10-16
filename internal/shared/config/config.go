@@ -17,27 +17,27 @@ var ENV Config
 func LoadConfig() {
 	viper.SetConfigFile(".env")
 	viper.SetConfigType("env")
-
-	// Set nilai default jika variabel tidak ada di .env
 	viper.SetDefault("PORT", "8080")
-
-	// Otomatis membaca ENV dari OS (Sangat berguna untuk Deployment/Docker/Server)
 	viper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err != nil {
-		log.Println("Peringatan: File .env tidak ditemukan, membaca dari OS Environment Variables...")
+	if err := viper.BindEnv("PORT"); err != nil {
+		log.Fatalf("Gagal bind PORT: %v", err)
 	}
-
-	// Unmarshal nilai .env ke struct ENV
+	if err := viper.BindEnv("DATABASE_URL"); err != nil {
+		log.Fatalf("Gagal bind DATABASE_URL: %v", err)
+	}
+	if err := viper.BindEnv("JWT_SECRET"); err != nil {
+		log.Fatalf("Gagal bind JWT_SECRET: %v", err)
+	}
+	if err := viper.ReadInConfig(); err != nil {
+		log.Println("File .env tidak ditemukan, menggunakan OS Environment Variables")
+	}
 	if err := viper.Unmarshal(&ENV); err != nil {
 		log.Fatalf("Gagal membaca konfigurasi environment: %v", err)
 	}
-
-	// Validasi variabel environment kritis
 	if ENV.DatabaseURL == "" {
 		log.Fatal("FATAL: DATABASE_URL tidak boleh kosong!")
 	}
-
 	if ENV.JWTSecret == "" {
 		log.Fatal("FATAL: JWT_SECRET tidak boleh kosong!")
 	}

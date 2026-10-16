@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+README.md
+
+.vscode
+.idea
+
+tmp
+logs
+
+*.log
+
+bin
+build
+
+node_modules
