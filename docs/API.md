@@ -131,11 +131,11 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
 | 26 | `GET` | `/api/v1/users/:id` | Bearer | `ADMIN` | Detail User |
 | 27 | `PATCH` | `/api/v1/users/:id` | Bearer | `ADMIN` | Update User (Partial) |
 | 28 | `DELETE` | `/api/v1/users/:id` | Bearer | `ADMIN` | Hapus User |
-| 29 | `POST` | `/api/v1/customers` | Bearer | `ADMIN` | Buat Customer |
+| 29 | `POST` | `/api/v1/customers` | Bearer | `ADMIN, STAFF` | Buat Customer |
 | 30 | `GET` | `/api/v1/customers` | Bearer | `ADMIN, STAFF` | List Customer (Paginated + Search) |
 | 31 | `GET` | `/api/v1/customers/:id` | Bearer | `ADMIN, STAFF` | Detail Customer |
-| 32 | `PATCH` | `/api/v1/customers/:id` | Bearer | `ADMIN` | Update Customer (Partial) |
-| 33 | `DELETE` | `/api/v1/customers/:id` | Bearer | `ADMIN` | Hapus Customer |
+| 32 | `PATCH` | `/api/v1/customers/:id` | Bearer | `ADMIN, STAFF` | Update Customer (Partial) |
+| 33 | `DELETE` | `/api/v1/customers/:id` | Bearer | `ADMIN, STAFF` | Hapus Customer |
 | 34 | `GET` | `/api/v1/tenants/:id` | Bearer | `ADMIN` | Detail Tenant |
 | 35 | `PATCH` | `/api/v1/tenants/:id` | Bearer | `ADMIN` | Update Tenant (Partial) |
 | 36 | `POST` | `/api/v1/outlets/:id/payment-methods` | Bearer | `ADMIN` | Tambah Payment Method ke Outlet |

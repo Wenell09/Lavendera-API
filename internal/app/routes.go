@@ -73,7 +73,7 @@ func NewRouter(
 	serviceCategoryRoutes.RegisterRoutes(adminGroup, staffGroup, serviceCategoryController)
 	serviceRoutes.RegisterRoutes(adminGroup, staffGroup, serviceController)
 	discountRoutes.RegisterRoutes(adminGroup, staffGroup, discountController)
-	customerRoutes.RegisterRoutes(adminGroup, staffGroup, customerController)
+	customerRoutes.RegisterRoutes(staffGroup, customerController)
 	userRoutes.RegisterRoutes(adminGroup, userController)
 	outletUserRoutes.RegisterRoutes(adminGroup, staffGroup, outletUserController)
 	outletPaymentMethodRoutes.RegisterRoutes(adminGroup, staffGroup, outletPaymentMethodController)
