@@ -88,7 +88,7 @@ Setiap modul memiliki struktur internal:
 | **Auth & Onboarding** | Registrasi tenant + admin pertama, login JWT |
 | **Outlet Management** | CRUD outlet per tenant dengan auto-slug, pagination & search |
 | **Service Category** | CRUD kategori layanan laundry |
-| **Service Management** | CRUD layanan laundry, filter kategori, unit: `gram`/`pcs`/`pair` |
+| **Service Management** | CRUD layanan laundry, filter kategori, unit: `kg`/`pcs`/`pair` |
 | **Discount Management** | CRUD diskon tipe `percentage` & `fixed` dengan batas auto-cap 100% |
 | **User / Staff Management** | CRUD akun user/staf per tenant, filter role, proteksi hapus diri sendiri |
 | **Customer Management** | CRUD pelanggan per tenant, paginasi & search |

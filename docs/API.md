@@ -614,7 +614,7 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
     "name": "Cuci Setrika Reguler",
     "price": 8000,
     "min_quantity": 3,
-    "unit": "gram",
+    "unit": "kg",
     "duration_days": 2,
     "is_active": true
   }
@@ -626,7 +626,7 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
   | `name` | required, min=3, max=255 |
   | `price` | gte=0 (dalam rupiah) |
   | `min_quantity` | gt=0 |
-  | `unit` | required, one of: `gram`, `pcs`, `pair` |
+  | `unit` | required, one of: `kg`, `pcs`, `pair` |
   | `duration_days` | gt=0 |
   | `is_active` | boolean |
 
@@ -645,7 +645,7 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
       "name": "Cuci Setrika Reguler",
       "price": 8000,
       "min_quantity": 3,
-      "unit": "gram",
+      "unit": "kg",
       "duration_days": 2,
       "is_active": true,
       "created_at": "2026-10-16T10:15:00Z",
@@ -685,7 +685,7 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
         "name": "Cuci Setrika Reguler",
         "price": 8000,
         "min_quantity": 3,
-        "unit": "gram",
+        "unit": "kg",
         "duration_days": 2,
         "is_active": true,
         "created_at": "2026-10-16T10:15:00Z",
@@ -726,7 +726,7 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
     "name": "Cuci Setrika Express",
     "price": 12000,
     "min_quantity": 2,
-    "unit": "gram",
+    "unit": "kg",
     "duration_days": 1,
     "is_active": true
   }
@@ -1624,7 +1624,7 @@ MENUNGGU_KONFIRMASI → DIPROSES → SELESAI → DIAMBIL
           "id": "item-uuid-0001-abcd-ef0123456789",
           "price": 8000,
           "quantity": 5000,
-          "unit": "gram",
+          "unit": "kg",
           "subtotal": 40000,
           "service": {
             "id": "e44d348a-6b87-43cf-be72-c5180f96894c",
@@ -1991,7 +1991,7 @@ Endpoint berikut **tidak memerlukan autentikasi** dan ditujukan untuk customer y
           "id": "item-uuid-0002-abcd",
           "price": 8000,
           "quantity": 3000,
-          "unit": "gram",
+          "unit": "kg",
           "subtotal": 24000,
           "service": {
             "id": "e44d348a-6b87-43cf-be72-c5180f96894c",
