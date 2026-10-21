@@ -2,6 +2,7 @@ package apperror
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -28,17 +29,12 @@ func (v ValidationError) ErrorData() interface{} {
 }
 
 // validation menggunakan validator
-type FieldDetail struct {
-	Field string `json:"field"`
-	Error string `json:"error"`
-}
-
 type FieldError struct {
-	Errors []FieldDetail `json:"errors"`
+	Msg string
 }
 
 func (f FieldError) Error() string {
-	return "validation error"
+	return f.Msg
 }
 
 func (f FieldError) StatusCode() int {
@@ -50,20 +46,18 @@ func (f FieldError) ResponseMessage() string {
 }
 
 func (f FieldError) ErrorData() interface{} {
-	return f.Errors
+	return f.Msg
 }
 
 func NewFieldError(validationErr validator.ValidationErrors) error {
-	dataErr := []FieldDetail{}
-
+	messages := make([]string, 0, len(validationErr))
 	for _, fieldErr := range validationErr {
-		dataErr = append(dataErr, FieldDetail{
-			Field: fieldErr.Field(),
-			Error: fieldErr.Tag(),
-		})
+		messages = append(
+			messages,
+			strings.ToLower(fieldErr.Field())+" "+fieldErr.Tag(),
+		)
 	}
-
 	return FieldError{
-		Errors: dataErr,
+		Msg: strings.Join(messages, ", "),
 	}
 }
