@@ -938,8 +938,7 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
 - **Query Parameters**:
   | Parameter | Tipe | Default | Deskripsi |
   |---|---|---|---|
-  | `search` | string | — | Prefix search pada nama user |
-  | `role` | string | — | Filter role: `ADMIN` atau `STAFF` |
+  | `search` | string | — | Prefix search pada nama atau email user |
   | `page` | integer | `1` | Halaman saat ini |
   | `limit` | integer | `10` | Jumlah per halaman (max: 100) |
 
@@ -1069,7 +1068,7 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
 - **Query Parameters**:
   | Parameter | Tipe | Default | Deskripsi |
   |---|---|---|---|
-  | `search` | string | — | Prefix search pada nama customer |
+  | `search` | string | — | Prefix search pada nama atau nomor handphone customer |
   | `page` | integer | `1` | Halaman saat ini |
   | `limit` | integer | `10` | Jumlah per halaman (max: 100) |
 
