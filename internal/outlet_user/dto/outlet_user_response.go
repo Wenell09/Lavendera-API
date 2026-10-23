@@ -7,11 +7,12 @@ import (
 )
 
 type OutletUserUserResponse struct {
-	ID       uuid.UUID `json:"id"`
-	Name     string    `json:"name"`
-	Email    string    `json:"email"`
-	Role     string    `json:"role"`
-	IsActive bool      `json:"is_active"`
+	ID       uuid.UUID  `json:"id"`
+	Name     string     `json:"name"`
+	Email    string     `json:"email"`
+	Role     string     `json:"role"`
+	IsActive bool       `json:"is_active"`
+	AssignAt *time.Time `json:"assigned_at,omitempty"`
 }
 
 type OutletUserOutletResponse struct {
@@ -20,10 +21,14 @@ type OutletUserOutletResponse struct {
 	Slug string    `json:"slug"`
 }
 
-type OutletUserResponse struct {
-	Outlet    OutletUserOutletResponse `json:"outlet"`
-	User      OutletUserUserResponse   `json:"user"`
-	CreatedAt time.Time                `json:"created_at"`
+type OutletUsersResponse struct {
+	Outlet OutletUserOutletResponse `json:"outlet"`
+	Users  []OutletUserUserResponse `json:"users"`
+}
+
+type UserOutletsResponse struct {
+	User    OutletUserUserResponse     `json:"user"`
+	Outlets []OutletUserOutletResponse `json:"outlets"`
 }
 
 type PaginationResponse struct {
@@ -34,6 +39,6 @@ type PaginationResponse struct {
 }
 
 type OutletUserListResponse struct {
-	Data       []OutletUserResponse
+	Data       OutletUsersResponse
 	Pagination PaginationResponse
 }

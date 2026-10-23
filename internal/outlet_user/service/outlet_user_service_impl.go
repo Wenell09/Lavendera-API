@@ -39,7 +39,7 @@ func NewOutletUserService(
 	}
 }
 
-func (s *OutletUserServiceImpl) Assign(ctx context.Context, req dto.CreateOutletUserRequest) (*dto.OutletUserResponse, error) {
+func (s *OutletUserServiceImpl) Assign(ctx context.Context, req dto.CreateOutletUserRequest) (*dto.OutletUsersResponse, error) {
 	logger := utils.LogWithContext(s.Logger, ctx).WithFields(logrus.Fields{
 		"outlet_id": req.OutletID,
 		"user_id":   req.UserID,
@@ -95,20 +95,22 @@ func (s *OutletUserServiceImpl) Assign(ctx context.Context, req dto.CreateOutlet
 
 	logger.Info("user assigned to outlet successfully")
 
-	return &dto.OutletUserResponse{
+	return &dto.OutletUsersResponse{
 		Outlet: dto.OutletUserOutletResponse{
 			ID:   outlet.ID,
 			Name: outlet.Name,
 			Slug: outlet.Slug,
 		},
-		User: dto.OutletUserUserResponse{
-			ID:       user.ID,
-			Name:     user.Name,
-			Email:    user.Email,
-			Role:     user.Role,
-			IsActive: user.IsActive,
+		Users: []dto.OutletUserUserResponse{
+			{
+				ID:       user.ID,
+				Name:     user.Name,
+				Email:    user.Email,
+				Role:     user.Role,
+				IsActive: user.IsActive,
+				AssignAt: &user.CreatedAt,
+			},
 		},
-		CreatedAt: outletUser.CreatedAt,
 	}, nil
 }
 
@@ -149,7 +151,7 @@ func (s *OutletUserServiceImpl) Unassign(ctx context.Context, outletID, userID u
 }
 
 // FindByUserID implements [OutletUserService].
-func (s *OutletUserServiceImpl) FindByUserID(ctx context.Context, userID uuid.UUID) (*dto.OutletUserResponse, error) {
+func (s *OutletUserServiceImpl) FindByUserID(ctx context.Context, userID uuid.UUID) (*dto.UserOutletsResponse, error) {
 	logger := utils.LogWithContext(s.Logger, ctx).WithFields(logrus.Fields{
 		"user_id": userID,
 	})
@@ -165,17 +167,20 @@ func (s *OutletUserServiceImpl) FindByUserID(ctx context.Context, userID uuid.UU
 		return nil, err
 	}
 
-	userOutlet, err := s.Repo.FindByUserID(ctx, userID)
+	userOutlets, err := s.Repo.FindByUserID(ctx, userID)
 	if err != nil {
 		logger.WithError(err).Error("failed to find user outlet")
 		return nil, err
 	}
-	return &dto.OutletUserResponse{
-		Outlet: dto.OutletUserOutletResponse{
-			ID:   userOutlet.Outlet.ID,
-			Name: userOutlet.Outlet.Name,
-			Slug: userOutlet.Outlet.Slug,
-		},
+	outlets := []dto.OutletUserOutletResponse{}
+	for _, ou := range userOutlets {
+		outlets = append(outlets, dto.OutletUserOutletResponse{
+			ID:   ou.Outlet.ID,
+			Name: ou.Outlet.Name,
+			Slug: ou.Outlet.Slug,
+		})
+	}
+	response := dto.UserOutletsResponse{
 		User: dto.OutletUserUserResponse{
 			ID:       user.ID,
 			Name:     user.Name,
@@ -183,8 +188,9 @@ func (s *OutletUserServiceImpl) FindByUserID(ctx context.Context, userID uuid.UU
 			Role:     user.Role,
 			IsActive: user.IsActive,
 		},
-		CreatedAt: userOutlet.CreatedAt,
-	}, nil
+		Outlets: outlets,
+	}
+	return &response, nil
 }
 
 func (s *OutletUserServiceImpl) FindByOutletID(ctx context.Context, outletID uuid.UUID, filter dto.OutletUserFilter) (*dto.OutletUserListResponse, error) {
@@ -210,24 +216,24 @@ func (s *OutletUserServiceImpl) FindByOutletID(ctx context.Context, outletID uui
 		logger.WithError(err).Error("failed to find outlet users")
 		return nil, err
 	}
-
-	responses := []dto.OutletUserResponse{}
+	usersResponse := []dto.OutletUserUserResponse{}
 	for _, ou := range outletUsers {
-		responses = append(responses, dto.OutletUserResponse{
-			Outlet: dto.OutletUserOutletResponse{
-				ID:   outlet.ID,
-				Name: outlet.Name,
-				Slug: outlet.Slug,
-			},
-			User: dto.OutletUserUserResponse{
-				ID:       ou.User.ID,
-				Name:     ou.User.Name,
-				Email:    ou.User.Email,
-				Role:     ou.User.Role,
-				IsActive: ou.User.IsActive,
-			},
-			CreatedAt: ou.CreatedAt,
+		usersResponse = append(usersResponse, dto.OutletUserUserResponse{
+			ID:       ou.User.ID,
+			Name:     ou.User.Name,
+			Email:    ou.User.Email,
+			Role:     ou.User.Role,
+			IsActive: ou.User.IsActive,
+			AssignAt: &ou.User.CreatedAt,
 		})
+	}
+	responses := dto.OutletUsersResponse{
+		Outlet: dto.OutletUserOutletResponse{
+			ID:   outlet.ID,
+			Name: outlet.Name,
+			Slug: outlet.Slug,
+		},
+		Users: usersResponse,
 	}
 
 	totalPages := int(math.Ceil(float64(total) / float64(filter.Limit)))

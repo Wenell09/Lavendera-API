@@ -8,8 +8,8 @@ import (
 )
 
 type OutletUserService interface {
-	Assign(ctx context.Context, req dto.CreateOutletUserRequest) (*dto.OutletUserResponse, error)
+	Assign(ctx context.Context, req dto.CreateOutletUserRequest) (*dto.OutletUsersResponse, error)
 	Unassign(ctx context.Context, outletID, userID uuid.UUID) error
 	FindByOutletID(ctx context.Context, outletID uuid.UUID, filter dto.OutletUserFilter) (*dto.OutletUserListResponse, error)
-	FindByUserID(ctx context.Context, userID uuid.UUID) (*dto.OutletUserResponse, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) (*dto.UserOutletsResponse, error)
 }

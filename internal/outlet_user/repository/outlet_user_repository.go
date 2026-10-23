@@ -10,7 +10,7 @@ import (
 
 type OutletUserRepository interface {
 	FindByOutletID(ctx context.Context, outletID uuid.UUID, filter dto.OutletUserFilter) ([]models.OutletUser, int64, error)
-	FindByUserID(ctx context.Context, userID uuid.UUID) (*models.OutletUser, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) ([]models.OutletUser, error)
 	Exists(ctx context.Context, outletID, userID uuid.UUID) (bool, error)
 	Create(ctx context.Context, outletUser *models.OutletUser) error
 	Delete(ctx context.Context, outletID, userID uuid.UUID) error

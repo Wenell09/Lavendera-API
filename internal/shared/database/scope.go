@@ -32,6 +32,20 @@ func TenantScopeByOutlet(ctx context.Context) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
+func TenantScopeByUser(ctx context.Context) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		tenantID, ok := appcontext.TenantIDFromContext(ctx)
+		if !ok || tenantID == uuid.Nil {
+			return db.Where("1 = 0")
+		}
+		subQuery := db.Session(&gorm.Session{NewDB: true}).
+			Table("users").
+			Select("id").
+			Where("tenant_id = ?", tenantID)
+		return db.Where("user_id IN (?)", subQuery)
+	}
+}
+
 func TenantScopeByOrder(ctx context.Context) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		tenantID, ok := appcontext.TenantIDFromContext(ctx)

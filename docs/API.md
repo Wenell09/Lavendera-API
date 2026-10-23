@@ -1398,14 +1398,15 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
         "name": "Outlet Cabang Melati",
         "slug": "outlet-cabang-melati"
       },
-      "user": {
+      "users": [
+        {
         "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "name": "Sari Dewi",
         "email": "sari@laundrysejahtera.com",
         "role": "STAFF",
         "is_active": true
-      },
-      "created_at": "2026-10-16T10:00:00Z"
+      }
+      ]
     },
     "meta": {}
   }
@@ -1431,23 +1432,29 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
     "status": 200,
     "message": "outlet users retrieved successfully",
     "success": true,
-    "data": [
+    "data": {
+      "outlet": {
+        "id": "e674b9e2-3cf7-4fbc-b4e8-4680dc1c1f7b",
+        "name": "Outlet Cabang Melati",
+        "slug": "outlet-cabang-melati"
+      },
+      "users": [
+        {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "Sari Dewi",
+        "email": "sari@laundrysejahtera.com",
+        "role": "STAFF",
+        "is_active": true
+      },
       {
-        "outlet": {
-          "id": "e674b9e2-3cf7-4fbc-b4e8-4680dc1c1f7b",
-          "name": "Outlet Cabang Melati",
-          "slug": "outlet-cabang-melati"
-        },
-        "user": {
-          "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "name": "Sari Dewi",
-          "email": "sari@laundrysejahtera.com",
-          "role": "STAFF",
-          "is_active": true
-        },
-        "created_at": "2026-10-16T10:00:00Z"
-      }
-    ],
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567891",
+        "name": "Budi",
+        "email": "budi@laundrysejahtera.com",
+        "role": "STAFF",
+        "is_active": true
+      },
+      ]
+    },
     "meta": {
       "pagination": {
         "page": 1,
@@ -1490,23 +1497,27 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
     "status": 200,
     "message": "user outlet retrieved successfully",
     "success": true,
-    "data": [
-      {
-        "outlet": {
-          "id": "e674b9e2-3cf7-4fbc-b4e8-4680dc1c1f7b",
-          "name": "Outlet Cabang Melati",
-          "slug": "outlet-cabang-melati"
-        },
-        "user": {
+    "data": {
+      "user": {
           "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
           "name": "Sari Dewi",
           "email": "sari@laundrysejahtera.com",
           "role": "STAFF",
           "is_active": true
         },
-        "created_at": "2026-10-16T10:00:00Z"
-      }
-    ],
+      "outlets": [
+        {
+          "id": "e674b9e2-3cf7-4fbc-b4e8-4680dc1c1f7b",
+          "name": "Outlet Cabang Melati",
+          "slug": "outlet-cabang-melati"
+        },
+        {
+          "id": "e674b9e2-3cf7-4fbc-b4e8-4680dc1c1f7c",
+          "name": "Outlet Cabang Matahari",
+          "slug": "outlet-cabang-matahari"
+        },
+      ]
+    },
     "meta": {}
   }
   ```
