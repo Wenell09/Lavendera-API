@@ -3,12 +3,17 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
+	"mime"
+	"mime/multipart"
+	"strings"
 
 	"github.com/Wenell09/lavendera-api/internal/models"
 	"github.com/Wenell09/lavendera-api/internal/outlet/repository"
 	"github.com/Wenell09/lavendera-api/internal/outlet_payment_method/dto"
 	paymentMethodRepo "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/repository"
+	"github.com/Wenell09/lavendera-api/internal/outlet_payment_method/repository/storage"
 	"github.com/Wenell09/lavendera-api/internal/shared/appcontext"
 	"github.com/Wenell09/lavendera-api/internal/shared/apperror"
 	"github.com/Wenell09/lavendera-api/internal/shared/utils"
@@ -20,13 +25,15 @@ import (
 type OutletPaymentMethodServiceImpl struct {
 	PaymentMethodRepo paymentMethodRepo.OutletPaymentMethodRepository
 	OutletRepo        repository.OutletRepository
+	StorageRepo       storage.StorageRepository
 	Logger            *logrus.Logger
 }
 
-func NewOutletPaymentMethodService(paymentMethodRepo paymentMethodRepo.OutletPaymentMethodRepository, outletRepo repository.OutletRepository, logger *logrus.Logger) OutletPaymentMethodService {
+func NewOutletPaymentMethodService(paymentMethodRepo paymentMethodRepo.OutletPaymentMethodRepository, outletRepo repository.OutletRepository, storageRepo storage.StorageRepository, logger *logrus.Logger) OutletPaymentMethodService {
 	return &OutletPaymentMethodServiceImpl{
 		PaymentMethodRepo: paymentMethodRepo,
 		OutletRepo:        outletRepo,
+		StorageRepo:       storageRepo,
 		Logger:            logger,
 	}
 }
@@ -103,6 +110,10 @@ func (s *OutletPaymentMethodServiceImpl) FindAll(ctx context.Context, outletID u
 	data := make([]dto.OutletPaymentMethodResponse, len(payments))
 	for i, p := range payments {
 		data[i] = toOutletPaymentMethodResponse(&p)
+		if p.QRImageURL != nil && *p.QRImageURL != "" {
+			publicURL := s.StorageRepo.GetPublicURL(*p.QRImageURL)
+			data[i].QRImageURL = &publicURL
+		}
 	}
 
 	totalPages := int(math.Ceil(float64(total) / float64(filter.Limit)))
@@ -131,6 +142,10 @@ func (s *OutletPaymentMethodServiceImpl) FindByID(ctx context.Context, id uuid.U
 	}
 
 	res := toOutletPaymentMethodResponse(payment)
+	if res.QRImageURL != nil && *res.QRImageURL != "" {
+		publicURL := s.StorageRepo.GetPublicURL(*res.QRImageURL)
+		res.QRImageURL = &publicURL
+	}
 	return &res, nil
 }
 
@@ -198,6 +213,76 @@ func (s *OutletPaymentMethodServiceImpl) Delete(ctx context.Context, id uuid.UUI
 	return nil
 }
 
+func (s *OutletPaymentMethodServiceImpl) UploadQRImage(ctx context.Context, id uuid.UUID, fileHeader *multipart.FileHeader) error {
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("payment_id", id)
+	tenantID, exists := appcontext.TenantIDFromContext(ctx)
+	if !exists {
+		return apperror.UnauthorizedError{Msg: "tenant_id not found"}
+	}
+	payment, err := s.PaymentMethodRepo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return apperror.NotFoundError{Msg: "outlet payment method not found"}
+		}
+		logger.WithError(err).Error("failed to find outlet payment method")
+		return err
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		return fmt.Errorf("open uploaded file: %w", err)
+	}
+	defer file.Close()
+	contentType := fileHeader.Header.Get("Content-Type")
+	extension, err := extensionFromContentType(contentType)
+	if err != nil {
+		return apperror.ValidationError{Msg: err.Error()}
+	}
+	if payment.QRImageURL != nil {
+		if delErr := s.StorageRepo.Delete(ctx, *payment.QRImageURL); delErr != nil {
+			logger.WithError(delErr).Warn("failed to delete old qr image")
+		}
+	}
+	objectPath, err := s.StorageRepo.Upload(ctx, tenantID, file, contentType, extension)
+	if err != nil {
+		logger.WithError(err).Error("failed to upload qr image")
+		return fmt.Errorf("upload qr image: %w", err)
+	}
+	updates := map[string]interface{}{
+		"qr_image_url": objectPath,
+	}
+	if err := s.PaymentMethodRepo.Update(ctx, id, updates); err != nil {
+		if cleanupErr := s.StorageRepo.Delete(ctx, objectPath); cleanupErr != nil {
+			logger.WithError(cleanupErr).Error("failed to cleanup uploaded qr image")
+		}
+		logger.WithError(err).Error("failed to update qr image url")
+		return err
+	}
+	return nil
+}
+
+func (s *OutletPaymentMethodServiceImpl) DeleteQRImage(ctx context.Context, id uuid.UUID) error {
+	logger := utils.LogWithContext(s.Logger, ctx).WithField("payment_id", id)
+	if _, exists := appcontext.TenantIDFromContext(ctx); !exists {
+		return apperror.UnauthorizedError{Msg: "tenant_id not found"}
+	}
+	payment, err := s.PaymentMethodRepo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return apperror.NotFoundError{Msg: "outlet payment method not found"}
+		}
+		logger.WithError(err).Error("failed to find outlet payment method")
+		return err
+	}
+	if payment.QRImageURL == nil {
+		return apperror.ValidationError{Msg: "qr image not found"}
+	}
+	if err := s.StorageRepo.Delete(ctx, *payment.QRImageURL); err != nil {
+		logger.WithError(err).Error("failed to delete qr image from storage")
+		return fmt.Errorf("delete qr image: %w", err)
+	}
+	return nil
+}
+
 func toOutletPaymentMethodResponse(m *models.OutletPaymentMethod) dto.OutletPaymentMethodResponse {
 	res := dto.OutletPaymentMethodResponse{
 		ID:            m.ID,
@@ -211,4 +296,20 @@ func toOutletPaymentMethodResponse(m *models.OutletPaymentMethod) dto.OutletPaym
 		UpdatedAt:     m.UpdatedAt,
 	}
 	return res
+}
+
+func extensionFromContentType(contentType string) (string, error) {
+	extensions, err := mime.ExtensionsByType(contentType)
+	if err != nil {
+		return "", err
+	}
+
+	for _, ext := range extensions {
+		switch strings.ToLower(ext) {
+		case ".jpg", ".jpeg", ".png", ".webp":
+			return ext, nil
+		}
+	}
+
+	return "", fmt.Errorf("unsupported image content type: %s", contentType)
 }

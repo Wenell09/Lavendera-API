@@ -147,3 +147,40 @@ func (ctrl *OutletPaymentMethodControllerImpl) Delete(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "outlet payment method deleted successfully", nil, response.ResponseMeta{}))
 }
+
+func (ctrl *OutletPaymentMethodControllerImpl) UploadQRImage(c *gin.Context) {
+	paymentMethodID, err := uuid.Parse(c.Param("payment_method_id"))
+	if err != nil {
+		apperror.NewHandleError(c, apperror.ValidationError{Msg: "invalid payment method id"})
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		apperror.NewHandleError(c, apperror.ValidationError{Msg: "file is required"})
+		return
+	}
+
+	err = ctrl.Service.UploadQRImage(c.Request.Context(), paymentMethodID, file)
+	if err != nil {
+		apperror.NewHandleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "qr image uploaded successfully", nil, response.ResponseMeta{}))
+}
+
+func (ctrl *OutletPaymentMethodControllerImpl) DeleteQRImage(c *gin.Context) {
+	paymentMethodID, err := uuid.Parse(c.Param("payment_method_id"))
+	if err != nil {
+		apperror.NewHandleError(c, apperror.ValidationError{Msg: "invalid payment method id"})
+		return
+	}
+
+	err = ctrl.Service.DeleteQRImage(c.Request.Context(), paymentMethodID)
+	if err != nil {
+		apperror.NewHandleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.NewResponseSuccess(http.StatusOK, "qr image deleted successfully", nil, response.ResponseMeta{}))
+}

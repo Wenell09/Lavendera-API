@@ -10,6 +10,8 @@ func RegisterRoutes(adminRouter *gin.RouterGroup, staffRouter *gin.RouterGroup, 
 	adminOutletPaymentMethods.POST("", controller.Create)
 	adminOutletPaymentMethods.PATCH("/:payment_method_id", controller.Update)
 	adminOutletPaymentMethods.DELETE("/:payment_method_id", controller.Delete)
+	adminOutletPaymentMethods.POST("/:payment_method_id/qr-image", controller.UploadQRImage)
+	adminOutletPaymentMethods.DELETE("/:payment_method_id/qr-image", controller.DeleteQRImage)
 
 	staffOutletPaymentMethods := staffRouter.Group("/outlets/:id/payment-methods")
 	staffOutletPaymentMethods.GET("", controller.FindAll)

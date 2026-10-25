@@ -24,6 +24,7 @@ import (
 	service6 "github.com/Wenell09/lavendera-api/internal/outlet/service"
 	controller7 "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/controller"
 	repository7 "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/repository"
+	"github.com/Wenell09/lavendera-api/internal/outlet_payment_method/repository/storage"
 	service7 "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/service"
 	controller9 "github.com/Wenell09/lavendera-api/internal/outlet_user/controller"
 	repository9 "github.com/Wenell09/lavendera-api/internal/outlet_user/repository"
@@ -71,7 +72,8 @@ func InitializeApp() (*App, error) {
 	outletService := service6.NewOutletService(outletRepository, logger)
 	outletController := controller6.NewOutletController(outletService, validate)
 	outletPaymentMethodRepository := repository7.NewOutletPaymentMethodRepository(db)
-	outletPaymentMethodService := service7.NewOutletPaymentMethodService(outletPaymentMethodRepository, outletRepository, logger)
+	storageRepository := storage.ProvideStorageRepository()
+	outletPaymentMethodService := service7.NewOutletPaymentMethodService(outletPaymentMethodRepository, outletRepository, storageRepository, logger)
 	outletPaymentMethodController := controller7.NewOutletPaymentMethodController(outletPaymentMethodService, validate)
 	userRepository := repository8.NewUserRepository(db)
 	userService := service8.NewUserService(userRepository, logger)

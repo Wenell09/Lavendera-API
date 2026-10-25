@@ -10,4 +10,6 @@ type OutletPaymentMethodController interface {
 	FindByID(c *gin.Context)
 	Update(c *gin.Context)
 	Delete(c *gin.Context)
+	UploadQRImage(c *gin.Context)
+	DeleteQRImage(c *gin.Context)
 }

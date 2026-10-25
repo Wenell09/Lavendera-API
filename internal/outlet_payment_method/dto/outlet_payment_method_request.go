@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"mime/multipart"
+
 	"github.com/google/uuid"
 )
 
@@ -10,8 +12,12 @@ type CreateOutletPaymentMethodRequest struct {
 	ProviderName  string    `json:"provider_name" validate:"required"`
 	AccountNumber *string   `json:"account_number"`
 	AccountName   string    `json:"account_name" validate:"required"`
-	QRImageURL    *string   `json:"qr_image_url"`
-	IsActive      *bool     `json:"is_active"`
+	QRImageURL    *string `json:"qr_image_url"`
+	IsActive      *bool   `json:"is_active"`
+}
+
+type UploadQRImageRequest struct {
+	File *multipart.FileHeader `form:"file" validate:"required"`
 }
 
 type UpdateOutletPaymentMethodRequest struct {

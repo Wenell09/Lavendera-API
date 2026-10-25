@@ -7,9 +7,12 @@ import (
 )
 
 type Config struct {
-	Port        string `mapstructure:"PORT"`
-	DatabaseURL string `mapstructure:"DATABASE_URL"`
-	JWTSecret   string `mapstructure:"JWT_SECRET"`
+	Port           string `mapstructure:"PORT"`
+	DatabaseURL    string `mapstructure:"DATABASE_URL"`
+	JWTSecret      string `mapstructure:"JWT_SECRET"`
+	SupabaseURL    string `mapstructure:"SUPABASE_URL"`
+	SupabaseKey    string `mapstructure:"SUPABASE_KEY"`
+	SupabaseBucket string `mapstructure:"SUPABASE_BUCKET"`
 }
 
 var ENV Config
@@ -28,6 +31,15 @@ func LoadConfig() {
 	}
 	if err := viper.BindEnv("JWT_SECRET"); err != nil {
 		log.Fatalf("Gagal bind JWT_SECRET: %v", err)
+	}
+	if err := viper.BindEnv("SUPABASE_URL"); err != nil {
+		log.Fatalf("Gagal bind SUPABASE_URL: %v", err)
+	}
+	if err := viper.BindEnv("SUPABASE_KEY"); err != nil {
+		log.Fatalf("Gagal bind SUPABASE_KEY: %v", err)
+	}
+	if err := viper.BindEnv("SUPABASE_BUCKET"); err != nil {
+		log.Fatalf("Gagal bind SUPABASE_BUCKET: %v", err)
 	}
 	if err := viper.ReadInConfig(); err != nil {
 		log.Println("File .env tidak ditemukan, menggunakan OS Environment Variables")
