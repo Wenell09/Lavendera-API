@@ -1547,8 +1547,8 @@ MENUNGGU_KONFIRMASI → DIPROSES → SELESAI → DIAMBIL
 
 | Status | Deskripsi |
 |---|---|
-| `BELUM_BAYAR` | Belum ada pembayaran |
-| `LUNAS` | Pembayaran sudah dikonfirmasi |
+| `UNPAID` | Belum ada pembayaran |
+| `PAID` | Pembayaran sudah dikonfirmasi |
 | `PENDING` | Pembayaran dalam proses verifikasi |
 
 ---
@@ -1601,7 +1601,7 @@ MENUNGGU_KONFIRMASI → DIPROSES → SELESAI → DIAMBIL
       "order_number": "ORD-20261016-0001",
       "tracking_token": "TRK-AbCdEfGhIjKl",
       "status": "DIPROSES",
-      "payment_status": "BELUM_BAYAR",
+      "payment_status": "PAID",
       "subtotal": 40000,
       "discount_amount": 6000,
       "total_amount": 34000,
@@ -1652,11 +1652,11 @@ MENUNGGU_KONFIRMASI → DIPROSES → SELESAI → DIAMBIL
         "id": "pay-uuid-0001-abcd-ef0123456789",
         "amount": 34000,
         "payment_method": "cash",
-        "status": "BELUM_BAYAR",
+        "status": "verified",
         "reference_number": null,
         "notes": null,
-        "paid_at": null,
-        "verified_at": null,
+        "paid_at": "2026-10-16T10:00:00Z",
+        "verified_at": "2026-10-16T10:00:00Z",
         "created_at": "2026-10-16T10:00:00Z",
         "updated_at": "2026-10-16T10:00:00Z"
       },
@@ -1703,7 +1703,7 @@ MENUNGGU_KONFIRMASI → DIPROSES → SELESAI → DIAMBIL
         "order_number": "ORD-20261016-0001",
         "tracking_token": "TRK-AbCdEfGhIjKl",
         "status": "DIPROSES",
-        "payment_status": "BELUM_BAYAR",
+        "payment_status": "UNPAID",
         "subtotal": 40000,
         "discount_amount": 6000,
         "total_amount": 34000,
@@ -1812,7 +1812,7 @@ MENUNGGU_KONFIRMASI → DIPROSES → SELESAI → DIAMBIL
 - **Auth**: `Bearer <token>`
 - **Role**: `ADMIN, STAFF`
 - **Path Params**: `id` (UUID order), `payment_id` (UUID payment)
-- **Deskripsi**: Mengkonfirmasi pembayaran order. Payment status berubah menjadi `LUNAS`.
+- **Deskripsi**: Mengkonfirmasi pembayaran order. Payment status berubah menjadi `PAID`.
 - **Request Body**: Tidak diperlukan.
 - **Response** `200 OK`:
   ```json
@@ -1820,7 +1820,7 @@ MENUNGGU_KONFIRMASI → DIPROSES → SELESAI → DIAMBIL
     "status": 200,
     "message": "payment confirmed successfully",
     "success": true,
-    "data": { ...OrderResponse dengan payment_status LUNAS... },
+    "data": { ...OrderResponse dengan payment_status PAID... },
     "meta": {}
   }
   ```
@@ -1856,7 +1856,7 @@ MENUNGGU_KONFIRMASI → DIPROSES → SELESAI → DIAMBIL
       "total_amount": 34000,
       "paid_amount": 50000,
       "change_amount": 16000,
-      "payment_status": "LUNAS",
+      "payment_status": "PAID",
       ...
     },
     "meta": {}
@@ -1920,7 +1920,7 @@ Endpoint berikut **tidak memerlukan autentikasi** dan ditujukan untuk customer y
       "order_number": "ORD-20261016-0002",
       "tracking_token": "TRK-XyZaBcDeFgHi",
       "status": "MENUNGGU_KONFIRMASI",
-      "payment_status": "BELUM_BAYAR",
+      "payment_status": "UNPAID",
       "subtotal": 24000,
       "discount_amount": 0,
       "total_amount": 24000,
@@ -1976,7 +1976,7 @@ Endpoint berikut **tidak memerlukan autentikasi** dan ditujukan untuk customer y
       "order_number": "ORD-20261016-0002",
       "tracking_token": "TRK-XyZaBcDeFgHi",
       "status": "DIPROSES",
-      "payment_status": "BELUM_BAYAR",
+      "payment_status": "UNPAID",
       "subtotal": 24000,
       "discount_amount": 0,
       "total_amount": 24000,
@@ -2019,7 +2019,7 @@ Endpoint berikut **tidak memerlukan autentikasi** dan ditujukan untuk customer y
         "id": "pay-uuid-0002-abcd",
         "amount": 24000,
         "payment_method": "bank_transfer",
-        "status": "BELUM_BAYAR",
+        "status": "unpaid",
         "reference_number": null,
         "notes": null,
         "paid_at": null,
