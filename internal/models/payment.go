@@ -21,5 +21,6 @@ type Payment struct {
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	Outlet          Outlet
+	Order           Order `gorm:"foreignKey:OrderID"`
 	Receiver        *User `gorm:"foreignKey:ReceivedBy"`
 }

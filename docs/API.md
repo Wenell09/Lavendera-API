@@ -23,6 +23,7 @@
 13. [Outlet Payment Methods Module](#10-outlet-payment-methods-module)
 14. [Outlet Users Module](#11-outlet-users-module)
 15. [Order Module](#12-order-module)
+16. [Report Module](#13-report-module)
 
 ---
 
@@ -156,6 +157,8 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
 | 51 | `PATCH` | `/api/v1/orders/:id/cash-payment` | Bearer | `ADMIN, STAFF` | Input Jumlah Bayar Tunai |
 | 52 | `POST` | `/api/v1/public/orders` | Public | — | Buat Order Mandiri (Publik) |
 | 53 | `GET` | `/api/v1/public/orders/track/:token` | Public | — | Lacak Order dengan Token |
+| 54 | `GET` | `/api/v1/dashboard` | Bearer | `ADMIN, STAFF` | Ringkasan Statistik Dashboard |
+| 55 | `GET` | `/api/v1/reports/financial` | Bearer | `ADMIN, STAFF` | Laporan Keuangan dan Riwayat Transaksi |
 
 
 ---
@@ -2038,6 +2041,105 @@ Endpoint berikut **tidak memerlukan autentikasi** dan ditujukan untuk customer y
   }
   ```
 - **Error Responses**: `400` (token kosong), `404` (order dengan token tidak ditemukan)
+
+---
+
+## 13. Report Module
+
+### GET /api/v1/dashboard
+- **Auth**: `Bearer <token>`
+- **Role**: `ADMIN, STAFF`
+- **Deskripsi**: Mengambil ringkasan statistik operasional dan keuangan (summary, rekap status order, rekap metode pembayaran, dan grafik penjualan).
+- **Query Parameters**:
+  | Parameter | Tipe | Default | Deskripsi |
+  |---|---|---|---|
+  | `start_date` | string | Bulan berjalan | Tanggal mulai filter (format: `YYYY-MM-DD`) |
+  | `end_date` | string | Bulan berjalan | Tanggal akhir filter (format: `YYYY-MM-DD`) |
+  | `outlet_id` | UUID | — | Filter berdasarkan outlet tertentu |
+
+- **Response** `200 OK`:
+  ```json
+  {
+    "status": 200,
+    "message": "dashboard retrieved successfully",
+    "success": true,
+    "data": {
+      "summary": {
+        "total_sales": 1500000,
+        "total_payments_received": 1200000,
+        "total_orders": 10,
+        "active_orders": 3
+      },
+      "order_status": [
+        {"status": "MENUNGGU_KONFIRMASI", "count": 2},
+        {"status": "DIPROSES", "count": 1},
+        {"status": "SELESAI", "count": 5},
+        {"status": "DIAMBIL", "count": 2},
+        {"status": "DIBATALKAN", "count": 0}
+      ],
+      "payment_methods": [
+        {"method": "cash", "total": 1200000, "count": 8}
+      ],
+      "sales_chart": [
+        {"date": "2026-10-01", "total_sales": 500000, "total_payments_received": 400000}
+      ]
+    },
+    "meta": {}
+  }
+  ```
+
+---
+
+### GET /api/v1/reports/financial
+- **Auth**: `Bearer <token>`
+- **Role**: `ADMIN, STAFF`
+- **Deskripsi**: Mengambil laporan keuangan dan daftar transaksi pembayaran terverifikasi dengan paginasi.
+- **Query Parameters**:
+  | Parameter | Tipe | Default | Deskripsi |
+  |---|---|---|---|
+  | `start_date` | string | Bulan berjalan | Tanggal mulai filter (format: `YYYY-MM-DD`) |
+  | `end_date` | string | Bulan berjalan | Tanggal akhir filter (format: `YYYY-MM-DD`) |
+  | `outlet_id` | UUID | — | Filter berdasarkan outlet tertentu |
+  | `page` | integer | `1` | Halaman saat ini |
+  | `limit` | integer | `10` | Jumlah per halaman (max: 100) |
+
+- **Response** `200 OK`:
+  ```json
+  {
+    "status": 200,
+    "message": "financial report retrieved successfully",
+    "success": true,
+    "data": {
+      "summary": {
+        "total_sales": 1500000,
+        "total_discount": 100000,
+        "total_payments_received": 1200000,
+        "total_orders": 10
+      },
+      "payments": [
+        {
+          "payment_id": "pay-uuid-0001",
+          "order_id": "ord-uuid-0001",
+          "order_number": "ORD-20261016-0001",
+          "customer_name": "Siti Rahma",
+          "outlet_name": "Outlet Cabang Melati",
+          "payment_method": "cash",
+          "amount": 1200000,
+          "status": "verified",
+          "paid_at": "2026-10-16T10:00:00Z"
+        }
+      ]
+    },
+    "meta": {
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 1,
+        "total_pages": 1
+      }
+    }
+  }
+  ```
 
 ---
 

@@ -98,6 +98,7 @@ Setiap modul memiliki struktur internal:
 | **Order Management** | Order kasir & order publik mandiri, kalkulasi harga & diskon otomatis |
 | **Payment Management** | Konfirmasi pembayaran, input bayar tunai & hitung kembalian |
 | **Order Tracking** | Tracking order publik via token unik tanpa login |
+| **Dashboard & Reports** | Ringkasan statistik operasional, rekap status, metode pembayaran, grafik penjualan & laporan keuangan terpaginasi |
 
 ---
 
@@ -201,6 +202,12 @@ Setiap modul memiliki struktur internal:
 | `PATCH` | `/api/v1/orders/:id/cancel` | `ADMIN, STAFF` | Batalkan Order |
 | `PATCH` | `/api/v1/orders/:id/payments/:payment_id/confirm` | `ADMIN, STAFF` | Konfirmasi Pembayaran |
 | `PATCH` | `/api/v1/orders/:id/cash-payment` | `ADMIN, STAFF` | Input Bayar Tunai |
+
+### Dashboard & Reports
+| Method | Path | Role | Deskripsi |
+|---|---|---|---|
+| `GET` | `/api/v1/dashboard` | `ADMIN, STAFF` | Ringkasan Statistik Dashboard |
+| `GET` | `/api/v1/reports/financial` | `ADMIN, STAFF` | Laporan Keuangan & Riwayat Pembayaran |
 
 ---
 

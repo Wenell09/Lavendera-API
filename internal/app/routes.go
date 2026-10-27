@@ -25,6 +25,8 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
 	tenantController "github.com/Wenell09/lavendera-api/internal/tenant/controller"
 	tenantRoutes "github.com/Wenell09/lavendera-api/internal/tenant/routes"
+	reportController "github.com/Wenell09/lavendera-api/internal/report/controller"
+	reportRoutes "github.com/Wenell09/lavendera-api/internal/report/routes"
 	userController "github.com/Wenell09/lavendera-api/internal/user/controller"
 	userRoutes "github.com/Wenell09/lavendera-api/internal/user/routes"
 	"github.com/gin-gonic/gin"
@@ -43,6 +45,7 @@ func NewRouter(
 	outletUserController outletUserController.OutletUserController,
 	tenantController tenantController.TenantController,
 	orderController orderController.OrderController,
+	reportController reportController.ReportController,
 	jwtConfig config.JWTConfig,
 	logger *logrus.Logger,
 ) *gin.Engine {
@@ -79,5 +82,6 @@ func NewRouter(
 	outletPaymentMethodRoutes.RegisterRoutes(adminGroup, staffGroup, outletPaymentMethodController)
 	tenantRoutes.RegisterRoutes(adminGroup, tenantController)
 	orderRoutes.RegisterRoutes(publicGroup, staffGroup, orderController)
+	reportRoutes.RegisterRoutes(staffGroup, reportController)
 	return r
 }
