@@ -17,6 +17,10 @@ import (
 	outletPaymentMethodRoutes "github.com/Wenell09/lavendera-api/internal/outlet_payment_method/routes"
 	outletUserController "github.com/Wenell09/lavendera-api/internal/outlet_user/controller"
 	outletUserRoutes "github.com/Wenell09/lavendera-api/internal/outlet_user/routes"
+	profileController "github.com/Wenell09/lavendera-api/internal/profile/controller"
+	profileRoutes "github.com/Wenell09/lavendera-api/internal/profile/routes"
+	reportController "github.com/Wenell09/lavendera-api/internal/report/controller"
+	reportRoutes "github.com/Wenell09/lavendera-api/internal/report/routes"
 	serviceController "github.com/Wenell09/lavendera-api/internal/service/controller"
 	serviceRoutes "github.com/Wenell09/lavendera-api/internal/service/routes"
 	serviceCategoryController "github.com/Wenell09/lavendera-api/internal/service_category/controller"
@@ -25,8 +29,6 @@ import (
 	"github.com/Wenell09/lavendera-api/internal/shared/middleware"
 	tenantController "github.com/Wenell09/lavendera-api/internal/tenant/controller"
 	tenantRoutes "github.com/Wenell09/lavendera-api/internal/tenant/routes"
-	reportController "github.com/Wenell09/lavendera-api/internal/report/controller"
-	reportRoutes "github.com/Wenell09/lavendera-api/internal/report/routes"
 	userController "github.com/Wenell09/lavendera-api/internal/user/controller"
 	userRoutes "github.com/Wenell09/lavendera-api/internal/user/routes"
 	"github.com/gin-gonic/gin"
@@ -46,6 +48,7 @@ func NewRouter(
 	tenantController tenantController.TenantController,
 	orderController orderController.OrderController,
 	reportController reportController.ReportController,
+	profileController profileController.ProfileController,
 	jwtConfig config.JWTConfig,
 	logger *logrus.Logger,
 ) *gin.Engine {
@@ -83,5 +86,6 @@ func NewRouter(
 	tenantRoutes.RegisterRoutes(adminGroup, tenantController)
 	orderRoutes.RegisterRoutes(publicGroup, staffGroup, orderController)
 	reportRoutes.RegisterRoutes(staffGroup, reportController)
+	profileRoutes.RegisterRoutes(staffGroup, profileController)
 	return r
 }
