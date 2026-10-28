@@ -42,6 +42,7 @@ func (p *ProfileServiceImpl) GetProfile(ctx context.Context) (*dto.ProfileRespon
 	}
 	return &dto.ProfileResponse{
 		ID:        profile.ID,
+		TenantID:  profile.TenantID,
 		Name:      profile.Name,
 		Email:     profile.Email,
 		Role:      profile.Role,

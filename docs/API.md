@@ -2159,6 +2159,7 @@ Endpoint berikut **tidak memerlukan autentikasi** dan ditujukan untuk customer y
     "success": true,
     "data": {
       "id": "1e5db5d2-0056-4c4f-9e79-5ee45b98df99",
+      "tenant_id": "1e5db5d2-0056-4c4f-9e79-5ee45b98df99",
       "name": "profile",
       "role": "STAFF",
       "email": "profile@gmail.com",
