@@ -24,6 +24,7 @@
 14. [Outlet Users Module](#11-outlet-users-module)
 15. [Order Module](#12-order-module)
 16. [Report Module](#13-report-module)
+17. [Profile Module](#14-profile-module)
 
 ---
 
@@ -157,8 +158,9 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
 | 51 | `PATCH` | `/api/v1/orders/:id/cash-payment` | Bearer | `ADMIN, STAFF` | Input Jumlah Bayar Tunai |
 | 52 | `POST` | `/api/v1/public/orders` | Public | — | Buat Order Mandiri (Publik) |
 | 53 | `GET` | `/api/v1/public/orders/track/:token` | Public | — | Lacak Order dengan Token |
-| 54 | `GET` | `/api/v1/dashboard` | Bearer | `ADMIN, STAFF` | Ringkasan Statistik Dashboard |
-| 55 | `GET` | `/api/v1/reports/financial` | Bearer | `ADMIN, STAFF` | Laporan Keuangan dan Riwayat Transaksi |
+| 54 | `GET` | `/api/v1/profile` | Bearer | `ADMIN, STAFF` | Lihat Data Profile |
+| 55 | `GET` | `/api/v1/dashboard` | Bearer | `ADMIN, STAFF` | Ringkasan Statistik Dashboard |
+| 56 | `GET` | `/api/v1/reports/financial` | Bearer | `ADMIN, STAFF` | Laporan Keuangan dan Riwayat Transaksi |
 
 
 ---
@@ -2140,6 +2142,32 @@ Endpoint berikut **tidak memerlukan autentikasi** dan ditujukan untuk customer y
     }
   }
   ```
+
+---
+
+## 14. Profile Module
+
+### GET /api/v1/profile
+- **Auth**: `Bearer <token>`
+- **Role**: `ADMIN, STAFF`
+- **Deskripsi**: Mendapatkan data profile.
+- **Response** `200 OK`:
+  ```json
+  {
+    "status": 200,
+    "message": "profile retrieved successfully",
+    "success": true,
+    "data": {
+      "id": "1e5db5d2-0056-4c4f-9e79-5ee45b98df99",
+      "name": "profile",
+      "role": "STAFF",
+      "email": "profile@gmail.com",
+      "created_at": "2026-10-16T10:00:00Z",
+    },
+    "meta": {}
+  }
+  ```
+- **Error Responses**: `404` (profile tidak ditemukan)
 
 ---
 

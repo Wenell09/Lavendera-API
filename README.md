@@ -209,6 +209,11 @@ Setiap modul memiliki struktur internal:
 | `GET` | `/api/v1/dashboard` | `ADMIN, STAFF` | Ringkasan Statistik Dashboard |
 | `GET` | `/api/v1/reports/financial` | `ADMIN, STAFF` | Laporan Keuangan & Riwayat Pembayaran |
 
+### Profile
+| Method | Path | Role | Deskripsi |
+|---|---|---|---|
+| `GET` | `/api/v1/profile` | `ADMIN, STAFF` | Mendapatkan Data Profile |
+
 ---
 
 ## ⚙️ Cara Menjalankan
