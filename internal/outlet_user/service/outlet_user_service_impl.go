@@ -71,7 +71,7 @@ func (s *OutletUserServiceImpl) Assign(ctx context.Context, req dto.CreateOutlet
 		return nil, apperror.ValidationError{Msg: "cannot assign inactive user"}
 	}
 
-	exists, err := s.Repo.Exists(ctx, req.OutletID, req.UserID)
+	exists, err := s.Repo.Exists(ctx, req.UserID)
 	if err != nil {
 		logger.WithError(err).Error("failed to check outlet_user existence")
 		return nil, err
@@ -132,7 +132,7 @@ func (s *OutletUserServiceImpl) Unassign(ctx context.Context, outletID, userID u
 		return err
 	}
 
-	exists, err := s.Repo.Exists(ctx, outletID, userID)
+	exists, err := s.Repo.Exists(ctx, userID)
 	if err != nil {
 		logger.WithError(err).Error("failed to check outlet_user existence")
 		return err

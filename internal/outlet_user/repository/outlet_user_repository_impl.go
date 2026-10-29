@@ -37,11 +37,11 @@ func (o *OutletUserRepositoryImpl) Delete(ctx context.Context, outletID, userID 
 }
 
 // Exists implements [OutletUserRepository].
-func (o *OutletUserRepositoryImpl) Exists(ctx context.Context, outletID, userID uuid.UUID) (bool, error) {
+func (o *OutletUserRepositoryImpl) Exists(ctx context.Context, userID uuid.UUID) (bool, error) {
 	var count int64
 	if err := o.DB.WithContext(ctx).Scopes(database.TenantScopeByOutlet(ctx)).
 		Model(&models.OutletUser{}).
-		Where("outlet_id = ? AND user_id = ?", outletID, userID).
+		Where("user_id = ?", userID).
 		Count(&count).Error; err != nil {
 		return false, err
 	}
