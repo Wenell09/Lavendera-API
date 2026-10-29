@@ -221,17 +221,13 @@ func (s *ReportServiceImpl) validateOutletAccess(ctx context.Context, outletID u
 		return apperror.UnauthorizedError{Msg: "user_id not found"}
 	}
 
-	outletUsers, err := s.OutletUserRepo.FindByUserID(ctx, userID)
+	outletUser, err := s.OutletUserRepo.FindByUserID(ctx, userID)
 	if err != nil {
 		return err
 	}
-
-	for _, ou := range outletUsers {
-		if ou.OutletID == outletID {
-			return nil
-		}
+	if outletUser.OutletID == outletID {
+		return nil
 	}
-
 	return apperror.NotFoundError{Msg: "outlet not found or not accessible"}
 }
 

@@ -1495,7 +1495,7 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
 - **Auth**: `Bearer <token>`
 - **Role**: `ADMIN, STAFF`
 - **Path Params**: `id` (UUID user)
-- **Deskripsi**: Mengambil daftar outlet yang sudah di-assign ke user tertentu. Berguna bagi staff untuk mengetahui outlet mana saja yang menjadi tanggung jawabnya.
+- **Deskripsi**: Mengambil daftar outlet yang sudah di-assign ke user tertentu. Berguna bagi staff untuk mengetahui outlet mana yang menjadi tanggung jawabnya.
 - **Response** `200 OK`:
   ```json
   {
@@ -1510,18 +1510,11 @@ Token diperoleh dari endpoint login dan bersifat **HS256 JWT**. Token menyimpan:
           "role": "STAFF",
           "is_active": true
         },
-      "outlets": [
-        {
+      "outlet":  {
           "id": "e674b9e2-3cf7-4fbc-b4e8-4680dc1c1f7b",
           "name": "Outlet Cabang Melati",
           "slug": "outlet-cabang-melati"
         },
-        {
-          "id": "e674b9e2-3cf7-4fbc-b4e8-4680dc1c1f7c",
-          "name": "Outlet Cabang Matahari",
-          "slug": "outlet-cabang-matahari"
-        },
-      ]
     },
     "meta": {}
   }

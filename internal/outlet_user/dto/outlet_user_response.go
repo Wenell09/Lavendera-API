@@ -27,8 +27,8 @@ type OutletUsersResponse struct {
 }
 
 type UserOutletsResponse struct {
-	User    OutletUserUserResponse     `json:"user"`
-	Outlets []OutletUserOutletResponse `json:"outlets"`
+	User   OutletUserUserResponse   `json:"user"`
+	Outlet OutletUserOutletResponse `json:"outlet"`
 }
 
 type PaginationResponse struct {

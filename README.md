@@ -188,7 +188,7 @@ Setiap modul memiliki struktur internal:
 | Method | Path | Role | Deskripsi |
 |---|---|---|---|
 | `GET` | `/api/v1/outlets/:id/users` | `ADMIN` | List User di Outlet |
-| `GET` | `/api/v1/users/:id/outlets` | `ADMIN, STAFF` | List Outlet yang Di-assign ke User |
+| `GET` | `/api/v1/users/:id/outlets` | `ADMIN, STAFF` | Detail Outlet yang Di-assign ke User |
 | `POST` | `/api/v1/outlets/:id/users` | `ADMIN` | Assign User ke Outlet |
 | `DELETE` | `/api/v1/outlets/:id/users/:user_id` | `ADMIN` | Unassign User dari Outlet |
 

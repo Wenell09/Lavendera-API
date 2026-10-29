@@ -49,18 +49,18 @@ func (o *OutletUserRepositoryImpl) Exists(ctx context.Context, userID uuid.UUID)
 }
 
 // FindByUserID implements [OutletUserRepository].
-func (o *OutletUserRepositoryImpl) FindByUserID(ctx context.Context, userID uuid.UUID) ([]models.OutletUser, error) {
-	userOutlets := []models.OutletUser{}
+func (o *OutletUserRepositoryImpl) FindByUserID(ctx context.Context, userID uuid.UUID) (*models.OutletUser, error) {
+	userOutlet := &models.OutletUser{}
 	if err := o.DB.WithContext(ctx).
 		Scopes(database.TenantScopeByUser(ctx)).
 		Model(&models.OutletUser{}).
 		Where("outlet_users.user_id = ?", userID).
 		Preload("User").
 		Preload("Outlet").
-		Find(&userOutlets).Error; err != nil {
+		Find(userOutlet).Error; err != nil {
 		return nil, err
 	}
-	return userOutlets, nil
+	return userOutlet, nil
 }
 
 // FindByOutletID implements [OutletUserRepository].

@@ -172,14 +172,7 @@ func (s *OutletUserServiceImpl) FindByUserID(ctx context.Context, userID uuid.UU
 		logger.WithError(err).Error("failed to find user outlet")
 		return nil, err
 	}
-	outlets := []dto.OutletUserOutletResponse{}
-	for _, ou := range userOutlets {
-		outlets = append(outlets, dto.OutletUserOutletResponse{
-			ID:   ou.Outlet.ID,
-			Name: ou.Outlet.Name,
-			Slug: ou.Outlet.Slug,
-		})
-	}
+
 	response := dto.UserOutletsResponse{
 		User: dto.OutletUserUserResponse{
 			ID:       user.ID,
@@ -188,7 +181,11 @@ func (s *OutletUserServiceImpl) FindByUserID(ctx context.Context, userID uuid.UU
 			Role:     user.Role,
 			IsActive: user.IsActive,
 		},
-		Outlets: outlets,
+		Outlet: dto.OutletUserOutletResponse{
+			ID:   userOutlets.Outlet.ID,
+			Name: userOutlets.Outlet.Name,
+			Slug: userOutlets.Outlet.Slug,
+		},
 	}
 	return &response, nil
 }
